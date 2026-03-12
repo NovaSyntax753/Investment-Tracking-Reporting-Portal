@@ -1,0 +1,8 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "/^cd \"d:\\\\Project\\\\Investment Tracking & Reporting Portal\" ; npx shadcn@latest init --defaults 2>&1$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}
