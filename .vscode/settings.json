@@ -4,5 +4,9 @@
       "approve": true,
       "matchCommandLine": true
     }
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "css.validate": false,
+  "scss.validate": false
 }
