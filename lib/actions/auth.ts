@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import { hash } from 'bcryptjs'
+import { getAuthEmailRedirect } from '@/lib/app-url'
 
 const VERIFICATION_WINDOW_HOURS = 24
 
@@ -395,12 +396,19 @@ export async function resendVerificationLinkAction(formData: FormData) {
   }
 
   const expiresAt = new Date(Date.now() + VERIFICATION_WINDOW_HOURS * 60 * 60 * 1000)
+  const emailRedirectTo = getAuthEmailRedirect('/login')
+
+  if (!emailRedirectTo) {
+    return {
+      error: 'Verification redirect URL is not configured. Set NEXT_PUBLIC_APP_URL (or APP_URL) to your public site URL.',
+    }
+  }
 
   const { error: resendError } = await service.auth.resend({
     type: 'signup',
     email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/login`,
+      emailRedirectTo,
     },
   })
 

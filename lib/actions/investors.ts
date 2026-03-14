@@ -3,6 +3,7 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import { requireAdmin } from '@/lib/actions/guards'
+import { getAuthEmailRedirect } from '@/lib/app-url'
 
 function normalizePhone(input: string | null | undefined) {
   const raw = (input || '').trim()
@@ -205,11 +206,20 @@ export async function approveRegistrationRequestAction(formData: FormData) {
     return { error: markError.message }
   }
 
+  const emailRedirectTo = getAuthEmailRedirect('/login')
+  if (!emailRedirectTo) {
+    return {
+      success: true,
+      emailSent: false,
+      emailError: 'Verification redirect URL is not configured. Set NEXT_PUBLIC_APP_URL (or APP_URL) to your public site URL.',
+    }
+  }
+
   const { error: resendError } = await supabase.auth.resend({
     type: 'signup',
     email: request.email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/login`,
+      emailRedirectTo,
     },
   })
 
