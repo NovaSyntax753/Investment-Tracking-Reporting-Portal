@@ -83,7 +83,7 @@ export async function loginAction(formData: FormData) {
     }
 
     if (pendingRequest?.status === 'approved') {
-      return { error: 'Your account is approved. Please set your password from the approval email before logging in.' }
+      return { error: 'Your account is approved. Please verify your email from the approval mail, then continue login.' }
     }
 
     return { error: 'Invalid credentials. Check email/password or register first.' }

@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { logoutAction } from '@/lib/actions/auth'
 import { Button } from '@/components/ui/button'
+import BrandLogo from '@/components/BrandLogo'
 import {
-  TrendingUp,
   LayoutDashboard,
   Users,
   Activity,
@@ -28,37 +28,39 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex min-h-screen bg-navy-deep">
-      {/* Sidebar */}
-      <aside className="flex w-60 shrink-0 flex-col border-r border-gold/15 bg-[#0a0f1e]">
-        <div className="flex items-center gap-2 border-b border-gold/15 px-5 py-5">
-          <TrendingUp className="h-5 w-5 text-gold" />
-          <span className="font-bold text-sm">
-            <span className="text-gold">RK </span>
-            <span className="text-foreground">Trading</span>
-          </span>
+    <div className="flex min-h-screen flex-col bg-navy-deep md:flex-row">
+      {/* Mobile top nav + desktop sidebar */}
+      <aside className="w-full shrink-0 border-b border-gold/15 bg-[#0a0f1e] md:w-60 md:border-b-0 md:border-r">
+        <div className="flex items-center justify-between border-b border-gold/15 px-4 py-3 md:px-5 md:py-5">
+          <BrandLogo href="/admin" imageClassName="h-9 w-auto" textClassName="text-sm font-bold" />
+          <form action={logoutAction} className="md:hidden">
+            <Button type="submit" size="sm" variant="ghost" className="gap-2 text-muted-foreground hover:text-destructive">
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+          </form>
         </div>
 
-        <div className="border-b border-gold/15 px-5 py-3">
+        <div className="hidden border-b border-gold/15 px-5 py-3 md:block">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-0.5 text-xs font-semibold text-gold">
             Admin Console
           </span>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 p-3">
+        <nav className="flex gap-2 overflow-x-auto px-3 py-3 md:flex-1 md:flex-col md:gap-1 md:p-3">
           {navLinks.map(({ href, label, icon }) => (
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-charcoal hover:text-foreground transition-colors"
+              className="flex shrink-0 items-center gap-2 rounded-lg border border-gold/20 bg-navy px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-charcoal hover:text-foreground md:border-transparent md:bg-transparent md:gap-3 md:px-3 md:py-2.5"
             >
               {icon}
-              {label}
+              <span className="whitespace-nowrap">{label}</span>
             </Link>
           ))}
         </nav>
 
-        <div className="border-t border-gold/15 p-3">
+        <div className="hidden border-t border-gold/15 p-3 md:block">
           <form action={logoutAction}>
             <Button
               type="submit"
@@ -73,11 +75,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </aside>
 
       {/* Main */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="border-b border-gold/15 bg-navy px-8 py-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest">Admin Console</p>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <header className="border-b border-gold/15 bg-navy px-4 py-3 md:px-8 md:py-4">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Admin Console</p>
         </header>
-        <main className="flex-1 overflow-auto p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
       </div>
     </div>
   )

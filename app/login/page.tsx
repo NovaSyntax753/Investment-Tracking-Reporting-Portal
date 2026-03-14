@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,10 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { TrendingUp, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { loginAction, submitRegistrationRequestAction } from '@/lib/actions/auth'
 import { HeroItem } from '@/components/Animate'
+import BrandLogo from '@/components/BrandLogo'
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -98,13 +98,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <HeroItem delay={0} className="mb-8 flex justify-center">
-          <Link href="/" className="flex items-center gap-2">
-            <TrendingUp className="h-7 w-7 text-gold" />
-            <span className="text-2xl font-bold">
-              <span className="text-gold">RK </span>
-              <span className="text-foreground">Trading</span>
-            </span>
-          </Link>
+          <BrandLogo imageClassName="h-14 w-auto" />
         </HeroItem>
 
         <HeroItem delay={0.15}>

@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { TrendingUp, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import BrandLogo from '@/components/BrandLogo'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -27,14 +28,7 @@ export default function Navbar() {
       className="sticky top-0 z-50 border-b border-gold bg-navy-deep/95 backdrop-blur-sm"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <TrendingUp className="h-6 w-6 text-gold" />
-          <span className="text-xl font-bold tracking-tight">
-            <span className="text-gold">RK </span>
-            <span className="text-foreground">Trading</span>
-          </span>
-        </Link>
+        <BrandLogo imageClassName="h-10 w-auto" />
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 md:flex">
