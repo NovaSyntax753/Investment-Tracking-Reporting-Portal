@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isAuthenticated = !!user
-  const isAdmin = isAuthenticated && user.email === process.env.ADMIN_EMAIL
+  const isAdmin = user?.email === process.env.ADMIN_EMAIL
 
   // ── Protect /dashboard/* ───────────────────────────────────────────────────
   if (pathname.startsWith('/dashboard')) {
