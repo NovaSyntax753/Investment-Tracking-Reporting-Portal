@@ -6,6 +6,9 @@ import { buttonVariants } from '@/lib/buttonVariants'
 import { cn } from '@/lib/utils'
 import { UserPlus } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function InvestorsPage() {
   const supabase = await createServiceClient()
 

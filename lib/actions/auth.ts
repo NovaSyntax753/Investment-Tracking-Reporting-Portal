@@ -168,6 +168,8 @@ export async function submitRegistrationRequestAction(formData: FormData) {
     return { error: error.message }
   }
 
+  revalidatePath('/admin/investors')
+
   const adminEmail = process.env.ADMIN_EMAIL
   if (adminEmail) {
     try {
