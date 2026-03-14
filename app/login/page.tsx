@@ -23,9 +23,14 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Enter a valid email'),
   phone: z.string().optional(),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirm_password: z.string().min(1, 'Please confirm your password'),
   invested_amount: z.coerce.number().min(0, 'Must be 0 or more'),
   fixed_return_value: z.coerce.number().min(0, 'Must be 0 or more'),
   fixed_return_percentage: z.coerce.number().min(0, 'Must be 0 or more').max(100, 'Must be 100 or less'),
+}).refine((data) => data.password === data.confirm_password, {
+  message: "Passwords don't match",
+  path: ['confirm_password'],
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -33,6 +38,8 @@ type LoginFormData = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [showPw, setShowPw] = useState(false)
+  const [showRegPw, setShowRegPw] = useState(false)
+  const [showRegConfirmPw, setShowRegConfirmPw] = useState(false)
 
   const loginForm = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) })
   const registerForm = useForm({
@@ -41,6 +48,8 @@ export default function LoginPage() {
       name: '',
       email: '',
       phone: '',
+      password: '',
+      confirm_password: '',
       invested_amount: 0,
       fixed_return_value: 0,
       fixed_return_percentage: 0,
@@ -65,7 +74,13 @@ export default function LoginPage() {
 
   async function onRegisterSubmit(data: z.infer<typeof registerSchema>) {
     const fd = new FormData()
-    Object.entries(data).forEach(([k, v]) => fd.append(k, String(v ?? '')))
+    fd.append('name', data.name)
+    fd.append('email', data.email)
+    fd.append('phone', data.phone ?? '')
+    fd.append('password', data.password)
+    fd.append('invested_amount', String(data.invested_amount))
+    fd.append('fixed_return_value', String(data.fixed_return_value))
+    fd.append('fixed_return_percentage', String(data.fixed_return_percentage))
 
     const result = await submitRegistrationRequestAction(fd)
     if (result?.error) {
@@ -213,6 +228,54 @@ export default function LoginPage() {
                     className="bg-navy border-gold/20 focus:border-gold"
                     {...registerForm.register('phone')}
                   />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg_password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="reg_password"
+                      type={showRegPw ? 'text' : 'password'}
+                      placeholder="Minimum 8 characters"
+                      className="bg-navy border-gold/20 focus:border-gold pr-10"
+                      {...registerForm.register('password')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegPw(!showRegPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      tabIndex={-1}
+                    >
+                      {showRegPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {registerForm.formState.errors.password && (
+                    <p className="text-xs text-destructive">{registerForm.formState.errors.password.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg_confirm_password">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="reg_confirm_password"
+                      type={showRegConfirmPw ? 'text' : 'password'}
+                      placeholder="Repeat your password"
+                      className="bg-navy border-gold/20 focus:border-gold pr-10"
+                      {...registerForm.register('confirm_password')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegConfirmPw(!showRegConfirmPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      tabIndex={-1}
+                    >
+                      {showRegConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {registerForm.formState.errors.confirm_password && (
+                    <p className="text-xs text-destructive">{registerForm.formState.errors.confirm_password.message}</p>
+                  )}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3">

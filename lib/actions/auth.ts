@@ -106,12 +106,17 @@ export async function submitRegistrationRequestAction(formData: FormData) {
   const name = (formData.get('name') as string)?.trim()
   const email = (formData.get('email') as string)?.trim().toLowerCase()
   const phone = ((formData.get('phone') as string) || '').trim() || null
+  const password = (formData.get('password') as string)?.trim()
   const investedAmount = Number(formData.get('invested_amount') || 0)
   const fixedReturnValue = Number(formData.get('fixed_return_value') || 0)
   const fixedReturnPercentage = Number(formData.get('fixed_return_percentage') || 0)
 
   if (!name || !email) {
     return { error: 'Name and email are required' }
+  }
+
+  if (!password || password.length < 8) {
+    return { error: 'Password must be at least 8 characters' }
   }
 
   if (!Number.isFinite(investedAmount) || investedAmount < 0) {
@@ -156,6 +161,7 @@ export async function submitRegistrationRequestAction(formData: FormData) {
       invested_amount: investedAmount,
       fixed_return_value: fixedReturnValue,
       fixed_return_percentage: fixedReturnPercentage,
+      temp_password: password,
       status: 'pending',
       reviewed_at: null,
       reviewed_by: null,
