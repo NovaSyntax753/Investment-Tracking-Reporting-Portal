@@ -23,7 +23,7 @@ export default function BrandLogo({
     <Link href={href} className={className}>
       {!imageFailed ? (
         <Image
-          src="/rk-logo.png"
+          src="/logo-image.jpeg"
           alt="RK Smart Money"
           width={160}
           height={56}
