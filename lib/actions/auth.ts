@@ -9,6 +9,15 @@ import { hash } from 'bcryptjs'
 
 const VERIFICATION_WINDOW_HOURS = 24
 
+function normalizePhone(input: string | null | undefined) {
+  const raw = (input || '').trim()
+  if (!raw) return null
+
+  // Keep optional leading plus and digits only for stable uniqueness checks.
+  const cleaned = raw.replace(/(?!^\+)\D/g, '')
+  return cleaned || null
+}
+
 async function findAuthUserIdByEmail(email: string) {
   const service = await createServiceClient()
   let page = 1
@@ -186,7 +195,7 @@ export async function logoutAction() {
 export async function submitRegistrationRequestAction(formData: FormData) {
   const name = (formData.get('name') as string)?.trim()
   const email = (formData.get('email') as string)?.trim().toLowerCase()
-  const phone = ((formData.get('phone') as string) || '').trim() || null
+  const phone = normalizePhone((formData.get('phone') as string) || '')
   const password = (formData.get('password') as string)?.trim()
   const investedAmount = Number(formData.get('invested_amount') || 0)
   const fixedReturnValue = Number(formData.get('fixed_return_value') || 0)
@@ -198,6 +207,15 @@ export async function submitRegistrationRequestAction(formData: FormData) {
 
   if (!password || password.length < 8) {
     return { error: 'Password must be at least 8 characters' }
+  }
+
+  if (!phone) {
+    return { error: 'Mobile number is required' }
+  }
+
+  const digitsOnlyLength = phone.replace(/\D/g, '').length
+  if (digitsOnlyLength < 8 || digitsOnlyLength > 15) {
+    return { error: 'Enter a valid mobile number' }
   }
 
   const passwordHash = await hash(password, 12)
@@ -226,6 +244,16 @@ export async function submitRegistrationRequestAction(formData: FormData) {
     return { error: 'This email is already registered. Please log in.' }
   }
 
+  const { data: existingInvestorPhone } = await supabase
+    .from('investors')
+    .select('id')
+    .eq('phone', phone)
+    .maybeSingle()
+
+  if (existingInvestorPhone) {
+    return { error: 'This mobile number is already registered with another investor.' }
+  }
+
   const { data: existingRequest } = await supabase
     .from('registration_requests')
     .select('id, status')
@@ -242,6 +270,17 @@ export async function submitRegistrationRequestAction(formData: FormData) {
 
   if (existingRequest && (existingRequest.status === 'approved' || existingRequest.status === 'active')) {
     return { error: 'This email is already approved. Please verify email and login.' }
+  }
+
+  const { data: existingPhoneRequest } = await supabase
+    .from('registration_requests')
+    .select('id, email, status')
+    .eq('phone', phone)
+    .in('status', ['pending', 'approved', 'active'])
+    .maybeSingle()
+
+  if (existingPhoneRequest && existingPhoneRequest.email !== email) {
+    return { error: 'This mobile number is already used in another account request.' }
   }
 
   const { error } = await supabase.from('registration_requests').upsert(
@@ -266,6 +305,9 @@ export async function submitRegistrationRequestAction(formData: FormData) {
   )
 
   if (error) {
+    if (error.code === '23505' && /phone/i.test(error.message)) {
+      return { error: 'This mobile number is already used. Please use a different number.' }
+    }
     return { error: error.message }
   }
 

@@ -4,22 +4,45 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import { requireAdmin } from '@/lib/actions/guards'
 
+function normalizePhone(input: string | null | undefined) {
+  const raw = (input || '').trim()
+  if (!raw) return null
+
+  const cleaned = raw.replace(/(?!^\+)\D/g, '')
+  return cleaned || null
+}
+
 export async function createInvestorAction(formData: FormData) {
   const authz = await requireAdmin()
   if ('error' in authz) return authz
 
   const name = formData.get('name') as string
-  const email = formData.get('email') as string
-  const phone = (formData.get('phone') as string) || null
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
+  const phone = normalizePhone(formData.get('phone') as string)
   const invested_amount = parseFloat(formData.get('invested_amount') as string)
   const fixed_return_value = parseFloat(formData.get('fixed_return_value') as string)
   const fixed_return_percentage = parseFloat(formData.get('fixed_return_percentage') as string)
 
-  if (!name || !email || isNaN(invested_amount)) {
+  if (!name || !email || !phone || isNaN(invested_amount)) {
     return { error: 'Missing required fields' }
   }
 
+  const digitsOnlyLength = phone.replace(/\D/g, '').length
+  if (digitsOnlyLength < 8 || digitsOnlyLength > 15) {
+    return { error: 'Enter a valid mobile number' }
+  }
+
   const supabase = await createServiceClient()
+
+  const { data: existingPhoneInvestor } = await supabase
+    .from('investors')
+    .select('id')
+    .eq('phone', phone)
+    .maybeSingle()
+
+  if (existingPhoneInvestor) {
+    return { error: 'This mobile number is already registered with another investor.' }
+  }
 
   // 1. Create Supabase Auth user (auto-confirm, no password — they set via magic link)
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -47,6 +70,9 @@ export async function createInvestorAction(formData: FormData) {
   if (profileError) {
     // Roll back auth user if profile insert fails
     await supabase.auth.admin.deleteUser(userId)
+    if (profileError.code === '23505' && /phone/i.test(profileError.message)) {
+      return { error: 'This mobile number is already used. Please use a different number.' }
+    }
     return { error: profileError.message }
   }
 
@@ -153,6 +179,9 @@ export async function approveRegistrationRequestAction(formData: FormData) {
 
   if (profileError) {
     await supabase.auth.admin.deleteUser(userId)
+    if (profileError.code === '23505' && /phone/i.test(profileError.message)) {
+      return { error: 'This mobile number is already used. Please review the request.' }
+    }
     return { error: profileError.message }
   }
 
