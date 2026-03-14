@@ -55,7 +55,17 @@ export default function PendingRegistrationTable({
       return
     }
 
-    toast.success('Registration approved and activation email sent')
+    const emailSent = !!(res && typeof res === 'object' && 'emailSent' in res && res.emailSent)
+    const emailError =
+      res && typeof res === 'object' && 'emailError' in res && res.emailError
+        ? String(res.emailError)
+        : null
+
+    if (emailSent) {
+      toast.success('Registration approved and activation email sent')
+    } else {
+      toast.warning(`Registration approved, but email not sent${emailError ? `: ${emailError}` : ''}`)
+    }
     setRequests((prev) => prev.filter((r) => r.id !== requestId))
   }
 
