@@ -126,7 +126,7 @@ export async function approveRegistrationRequestAction(formData: FormData) {
 
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: request.email,
-    email_confirm: true,
+    email_confirm: false,   // Supabase sends a confirmation email automatically
     ...(request.temp_password ? { password: request.temp_password } : {}),
   })
 
@@ -167,69 +167,7 @@ export async function approveRegistrationRequestAction(formData: FormData) {
     return { error: markError.message }
   }
 
-  let emailSent = false
-  let emailError: string | null = null
-
-  if (!process.env.RESEND_API_KEY) {
-    emailError = 'RESEND_API_KEY is not configured.'
-  } else {
-    try {
-      const resend = new Resend(process.env.RESEND_API_KEY)
-      let emailHtml: string
-
-      if (request.temp_password) {
-        // User set a password during registration — just tell them to log in directly
-        emailHtml = `
-          <div style="font-family:sans-serif;max-width:560px;margin:auto;background:#111b2e;color:#e8eaf0;padding:32px;border-radius:12px;border:1px solid rgba(212,175,55,0.3)">
-            <h1 style="color:#d4af37;margin-top:0">Hi ${request.name},</h1>
-            <p>Your investor registration has been <strong>approved!</strong></p>
-            <p>You can now log in using your email and the password you chose during registration.</p>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL ?? ''}/login"
-               style="display:inline-block;margin-top:16px;padding:12px 28px;background:#d4af37;color:#0a0f1e;font-weight:700;text-decoration:none;border-radius:6px;">
-              Login to Dashboard
-            </a>
-            <p style="margin-top:24px;font-size:12px;color:#7a8aa0">If you have trouble logging in, contact the admin.</p>
-          </div>
-        `
-      } else {
-        // No password set — generate magic link as fallback
-        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-          type: 'recovery',
-          email: request.email,
-        })
-        if (linkError || !linkData?.properties?.action_link) {
-          emailError = linkError?.message ?? 'Failed to generate login link'
-          return { success: true, emailSent, emailError }
-        }
-        emailHtml = `
-          <div style="font-family:sans-serif;max-width:560px;margin:auto;background:#111b2e;color:#e8eaf0;padding:32px;border-radius:12px;border:1px solid rgba(212,175,55,0.3)">
-            <h1 style="color:#d4af37;margin-top:0">Hi ${request.name},</h1>
-            <p>Your investor registration has been approved by the admin.</p>
-            <p>Click below to set your password and access your dashboard.</p>
-            <a href="${linkData.properties.action_link}"
-               style="display:inline-block;margin-top:16px;padding:12px 28px;background:#d4af37;color:#0a0f1e;font-weight:700;text-decoration:none;border-radius:6px;">
-              Set Password &amp; Login
-            </a>
-          </div>
-        `
-      }
-
-      const { error: sendError } = await resend.emails.send({
-        from: `RK Trading <noreply@${process.env.RESEND_DOMAIN ?? 'rktrading.in'}>`,
-        to: request.email,
-        subject: 'Your registration is approved — RK Trading',
-        html: emailHtml,
-      })
-
-      if (sendError) {
-        emailError = sendError.message
-      } else {
-        emailSent = true
-      }
-    } catch (e) {
-      emailError = e instanceof Error ? e.message : 'Email send failed'
-    }
-  }
-
-  return { success: true, emailSent, emailError }
+  // Supabase automatically sends a confirmation email because email_confirm: false
+  // The investor clicks the link → account confirmed → logs in with their password
+  return { success: true, emailSent: true, emailError: null }
 }
