@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Mail, Phone, MapPin, Loader2, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitContactAction } from '@/lib/actions/contact'
+import { FadeUp, Stagger, StaggerItem } from '@/components/Animate'
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -45,26 +46,29 @@ export default function ContactPage() {
   return (
     <div className="py-20">
       <div className="mx-auto max-w-5xl px-6">
-        <div className="mb-14 text-center">
+        <FadeUp className="mb-14 text-center">
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gold">Contact</p>
           <h1 className="text-4xl font-extrabold sm:text-5xl">Get In Touch</h1>
           <p className="mt-4 text-lg text-muted-foreground">
             Have a question or ready to invest? We&apos;d love to hear from you.
           </p>
-        </div>
+        </FadeUp>
 
         <div className="grid gap-10 md:grid-cols-5">
           {/* Info */}
-          <div className="md:col-span-2 space-y-6">
+          <Stagger className="md:col-span-2 space-y-6">
+            <StaggerItem>
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-charcoal">
                 <Mail className="h-5 w-5 text-gold" />
               </div>
               <div>
                 <p className="font-semibold">Email</p>
-                <p className="text-sm text-muted-foreground">contact@alphacapital.in</p>
+                <p className="text-sm text-muted-foreground">contact@rktrading.in</p>
               </div>
             </div>
+            </StaggerItem>
+            <StaggerItem>
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-charcoal">
                 <Phone className="h-5 w-5 text-gold" />
@@ -74,6 +78,8 @@ export default function ContactPage() {
                 <p className="text-sm text-muted-foreground">+91 98XXX XXXXX</p>
               </div>
             </div>
+            </StaggerItem>
+            <StaggerItem>
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-charcoal">
                 <MapPin className="h-5 w-5 text-gold" />
@@ -83,10 +89,12 @@ export default function ContactPage() {
                 <p className="text-sm text-muted-foreground">Mumbai, Maharashtra, India</p>
               </div>
             </div>
-          </div>
+            </StaggerItem>
+          </Stagger>
 
           {/* Form */}
-          <Card className="md:col-span-3 bg-charcoal border-gold/20">
+          <FadeUp delay={0.2} className="md:col-span-3">
+          <Card className="bg-charcoal border-gold/20">
             <CardHeader>
               <CardTitle className="text-lg">Send a Message</CardTitle>
             </CardHeader>
@@ -152,6 +160,7 @@ export default function ContactPage() {
               )}
             </CardContent>
           </Card>
+          </FadeUp>
         </div>
       </div>
     </div>

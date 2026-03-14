@@ -23,7 +23,7 @@ export async function sendDailyUpdateEmail(
   const safeNotes = notes ? notes.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>') : null
 
   await resend.emails.send({
-    from: `AlphaCapital <noreply@${process.env.RESEND_DOMAIN ?? 'alphacapital.in'}>`,
+    from: `RK Trading <noreply@${process.env.RESEND_DOMAIN ?? 'rktrading.in'}>`,
     to,
     subject: `Daily Portfolio Update — ${formattedDate}`,
     html: `
@@ -49,7 +49,7 @@ export async function sendDailySMS(to: string, name: string, eodAmount: number, 
   await client.messages.create({
     from: process.env.TWILIO_PHONE_NUMBER!,
     to,
-    body: `AlphaCapital | ${formattedDate}\nHi ${name}, your portfolio EOD value: ${fmt(eodAmount)}\nView dashboard: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+    body: `RK Trading | ${formattedDate}\nHi ${name}, your portfolio EOD value: ${fmt(eodAmount)}\nView dashboard: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
   })
 }
 
@@ -60,7 +60,7 @@ export async function sendDailyWhatsApp(to: string, name: string, eodAmount: num
   await client.messages.create({
     from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`,
     to: `whatsapp:${to}`,
-    body: `*AlphaCapital — Daily Update*\n📅 ${formattedDate}\nHi ${name}!\n\n💼 *Portfolio Value:* ${fmt(eodAmount)}\n\nView your full dashboard: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+    body: `*RK Trading — Daily Update*\n📅 ${formattedDate}\nHi ${name}!\n\n💼 *Portfolio Value:* ${fmt(eodAmount)}\n\nView your full dashboard: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
   })
 }
 
@@ -68,7 +68,7 @@ export async function sendDailyWhatsApp(to: string, name: string, eodAmount: num
 export async function sendReportReadyEmail(to: string, name: string, month: string) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   await resend.emails.send({
-    from: `AlphaCapital <noreply@${process.env.RESEND_DOMAIN ?? 'alphacapital.in'}>`,
+    from: `RK Trading <noreply@${process.env.RESEND_DOMAIN ?? 'rktrading.in'}>`,
     to,
     subject: `Monthly Report Available — ${month}`,
     html: `
@@ -80,7 +80,7 @@ export async function sendReportReadyEmail(to: string, name: string, month: stri
            style="display:inline-block;margin-top:16px;padding:12px 28px;background:#d4af37;color:#0a0f1e;font-weight:700;text-decoration:none;border-radius:6px;">
           View Reports →
         </a>
-        <p style="margin-top:24px;font-size:12px;color:#7a8aa0">You are receiving this because you have an active investor account with AlphaCapital.</p>
+        <p style="margin-top:24px;font-size:12px;color:#7a8aa0">You are receiving this because you have an active investor account with RK Trading.</p>
       </div>
     `,
   })

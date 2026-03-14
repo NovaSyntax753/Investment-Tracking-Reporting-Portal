@@ -1,8 +1,11 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { buttonVariants } from '@/lib/buttonVariants'
 import { cn } from '@/lib/utils'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
+import { FadeUp, Stagger, StaggerItem } from '@/components/Animate'
 
 const tiers = [
   {
@@ -45,27 +48,27 @@ export default function ServicesPage() {
   return (
     <div className="py-20">
       <div className="mx-auto max-w-5xl px-6">
-        <div className="mb-14 text-center">
+        <FadeUp className="mb-14 text-center">
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gold">Services</p>
           <h1 className="text-4xl font-extrabold sm:text-5xl">Investment Tiers</h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
             Choose the tier that matches your capital. All returns are fixed and guaranteed
             in your investor agreement.
           </p>
-        </div>
+        </FadeUp>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <Stagger className="grid gap-6 md:grid-cols-3">
           {tiers.map((t) => (
+            <StaggerItem key={t.name}>
             <Card
-              key={t.name}
-              className={`relative flex flex-col ${
+              className={`relative flex flex-col h-full ${
                 t.highlight
                   ? 'border-gold bg-charcoal shadow-[0_0_30px_rgba(212,175,55,0.15)]'
-                  : 'border-gold/20 bg-charcoal'
+                  : 'border-gold/20 bg-charcoal hover:border-gold/40 transition-colors'
               }`}
             >
               {t.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gold px-4 py-0.5 text-xs font-bold text-navy-deep">
+                <div className="absolute right-4 top-4 rounded-full bg-gold px-4 py-1 text-xs font-bold text-navy-deep">
                   Most Popular
                 </div>
               )}
@@ -97,8 +100,9 @@ export default function ServicesPage() {
                 </Link>
               </CardContent>
             </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
           All investment plans are subject to a signed investor agreement.{' '}

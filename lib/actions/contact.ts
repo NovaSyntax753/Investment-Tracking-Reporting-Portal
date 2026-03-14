@@ -28,7 +28,7 @@ export async function submitContactAction(formData: FormData) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY)
       await resend.emails.send({
-        from: `AlphaCapital Contact Form <noreply@${process.env.RESEND_DOMAIN ?? 'alphacapital.in'}>`,
+        from: `RK Trading Contact Form <noreply@${process.env.RESEND_DOMAIN ?? 'rktrading.in'}>`,
         to: adminEmail,
         subject: `New Contact Form Submission — ${safeName}`,
         html: `

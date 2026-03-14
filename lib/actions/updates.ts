@@ -1,8 +1,12 @@
 'use server'
 
 import { createServiceClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/actions/guards'
 
 export async function createDailyUpdateAction(formData: FormData) {
+  const authz = await requireAdmin()
+  if ('error' in authz) return authz
+
   const investorId = formData.get('investorId') as string
   const eodAmount = parseFloat(formData.get('eodAmount') as string)
   const tradeNotes = (formData.get('tradeNotes') as string) || null

@@ -34,8 +34,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="flex items-center gap-2 border-b border-gold/15 px-5 py-5">
           <TrendingUp className="h-5 w-5 text-gold" />
           <span className="font-bold text-sm">
-            <span className="text-gold">Alpha</span>
-            <span className="text-foreground">Capital</span>
+            <span className="text-gold">RK </span>
+            <span className="text-foreground">Trading</span>
           </span>
         </div>
 

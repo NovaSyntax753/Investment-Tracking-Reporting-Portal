@@ -1,16 +1,25 @@
+'use client'
+
 import Link from 'next/link'
 import { TrendingUp } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-gold/20 bg-navy-deep py-10">
+    <motion.footer
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="border-t border-gold/20 bg-navy-deep py-10"
+    >
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <Link href="/" className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-gold" />
             <span className="font-bold">
-              <span className="text-gold">Alpha</span>
-              <span className="text-foreground">Capital</span>
+              <span className="text-gold">RK </span>
+              <span className="text-foreground">Trading</span>
             </span>
           </Link>
 
@@ -22,10 +31,10 @@ export default function Footer() {
           </nav>
 
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} AlphaCapital. All rights reserved.
+            © {new Date().getFullYear()} RK Trading. All rights reserved.
           </p>
         </div>
       </div>
-    </footer>
+    </motion.footer>
   )
 }

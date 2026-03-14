@@ -1,4 +1,10 @@
 {
+  "sqltools.suggestPlatforms": [
+    "PostgreSQL"
+  ],
+  "files.associations": {
+    "*.sql": "postgres"
+  },
   "chat.tools.terminal.autoApprove": {
     "/^cd \"d:\\\\Project\\\\Investment Tracking & Reporting Portal\" ; npx shadcn@latest init --defaults 2>&1$/": {
       "approve": true,

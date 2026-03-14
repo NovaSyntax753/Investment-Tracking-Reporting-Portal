@@ -6,6 +6,7 @@ import { TrendingUp, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -19,14 +20,19 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gold bg-navy-deep/95 backdrop-blur-sm">
+    <motion.header
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="sticky top-0 z-50 border-b border-gold bg-navy-deep/95 backdrop-blur-sm"
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <TrendingUp className="h-6 w-6 text-gold" />
           <span className="text-xl font-bold tracking-tight">
-            <span className="text-gold">Alpha</span>
-            <span className="text-foreground">Capital</span>
+            <span className="text-gold">RK </span>
+            <span className="text-foreground">Trading</span>
           </span>
         </Link>
 
@@ -59,9 +65,16 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
+      <AnimatePresence>
       {open && (
-        <div className="border-t border-gold/20 bg-navy-deep px-6 py-4 md:hidden">
-          <nav className="flex flex-col gap-4">
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="overflow-hidden border-t border-gold/20 bg-navy-deep md:hidden"
+        >
+          <nav className="flex flex-col gap-4 px-6 py-4">
             {navLinks.map(({ href, label }) => (
               <Link
                 key={href}
@@ -78,8 +91,9 @@ export default function Navbar() {
               Investor Login
             </Link>
           </nav>
-        </div>
+        </motion.div>
       )}
-    </header>
+      </AnimatePresence>
+    </motion.header>
   )
 }
