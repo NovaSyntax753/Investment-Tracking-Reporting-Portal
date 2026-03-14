@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { approveRegistrationRequestAction } from '@/lib/actions/investors'
+import { approveRegistrationRequestAction, rejectRegistrationRequestAction } from '@/lib/actions/investors'
 
 export interface PendingRegistration {
   id: string
@@ -42,6 +42,7 @@ export default function PendingRegistrationTable({
 }) {
   const [requests, setRequests] = useState(initialRequests)
   const [approvingId, setApprovingId] = useState<string | null>(null)
+  const [rejectingId, setRejectingId] = useState<string | null>(null)
 
   async function handleApprove(requestId: string) {
     setApprovingId(requestId)
@@ -56,6 +57,28 @@ export default function PendingRegistrationTable({
     }
 
     toast.success('Registration approved — confirmation email sent by Supabase')
+    setRequests((prev) => prev.filter((r) => r.id !== requestId))
+  }
+
+  async function handleReject(requestId: string) {
+    setRejectingId(requestId)
+    const fd = new FormData()
+    fd.append('requestId', requestId)
+    const res = await rejectRegistrationRequestAction(fd)
+    setRejectingId(null)
+
+    if (res?.error) {
+      toast.error(res.error)
+      return
+    }
+
+    if ('emailSent' in res && res.emailSent) {
+      toast.success('Registration rejected and rejection email sent')
+    } else {
+      const emailError = 'emailError' in res && res.emailError ? ` (${String(res.emailError)})` : ''
+      toast.warning(`Registration rejected, but email not sent${emailError}`)
+    }
+
     setRequests((prev) => prev.filter((r) => r.id !== requestId))
   }
 
@@ -100,17 +123,32 @@ export default function PendingRegistrationTable({
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
-                <Button
-                  onClick={() => handleApprove(req.id)}
-                  disabled={approvingId === req.id}
-                  className="bg-gold text-navy-deep font-semibold hover:bg-gold-light"
-                >
-                  {approvingId === req.id ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Approving...</>
-                  ) : (
-                    <><CheckCircle2 className="mr-2 h-4 w-4" />Approve</>
-                  )}
-                </Button>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    onClick={() => handleApprove(req.id)}
+                    disabled={approvingId === req.id || rejectingId === req.id}
+                    className="bg-gold text-navy-deep font-semibold hover:bg-gold-light"
+                  >
+                    {approvingId === req.id ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Approving...</>
+                    ) : (
+                      <><CheckCircle2 className="mr-2 h-4 w-4" />Approve</>
+                    )}
+                  </Button>
+
+                  <Button
+                    onClick={() => handleReject(req.id)}
+                    disabled={rejectingId === req.id || approvingId === req.id}
+                    variant="destructive"
+                    className="font-semibold"
+                  >
+                    {rejectingId === req.id ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Rejecting...</>
+                    ) : (
+                      <><XCircle className="mr-2 h-4 w-4" />Reject</>
+                    )}
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

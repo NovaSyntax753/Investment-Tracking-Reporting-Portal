@@ -5,6 +5,31 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
+import { hash } from 'bcryptjs'
+
+const VERIFICATION_WINDOW_HOURS = 24
+
+async function findAuthUserIdByEmail(email: string) {
+  const service = await createServiceClient()
+  let page = 1
+
+  while (page <= 10) {
+    const { data, error } = await service.auth.admin.listUsers({ page, perPage: 200 })
+    if (error) {
+      return { userId: null, error: error.message }
+    }
+
+    const found = data.users.find((u) => (u.email || '').toLowerCase() === email)
+    if (found) {
+      return { userId: found.id, error: null }
+    }
+
+    if (data.users.length < 200) break
+    page += 1
+  }
+
+  return { userId: null, error: null }
+}
 
 export async function loginAction(formData: FormData) {
   const email = ((formData.get('email') as string) || '').trim().toLowerCase()
@@ -74,7 +99,7 @@ export async function loginAction(formData: FormData) {
 
     const { data: pendingRequest } = await service
       .from('registration_requests')
-      .select('status')
+      .select('status, verification_expires_at')
       .eq('email', email)
       .maybeSingle()
 
@@ -82,11 +107,67 @@ export async function loginAction(formData: FormData) {
       return { error: 'Your registration is pending admin approval. Please wait for approval email.' }
     }
 
+    if (pendingRequest?.status === 'rejected') {
+      return { error: 'Your registration request was not approved. Please contact admin.' }
+    }
+
     if (pendingRequest?.status === 'approved') {
+      const expired =
+        !!pendingRequest.verification_expires_at &&
+        Date.now() > new Date(pendingRequest.verification_expires_at).getTime()
+
+      if (expired) {
+        return { error: 'Verification link expired. Use Resend Verification Link on login page.' }
+      }
+
       return { error: 'Your account is approved. Please verify your email from the approval mail, then continue login.' }
     }
 
     return { error: 'Invalid credentials. Check email/password or register first.' }
+  }
+
+  const service = await createServiceClient()
+  const { data: requestRow } = await service
+    .from('registration_requests')
+    .select('status, verification_expires_at')
+    .eq('email', email)
+    .maybeSingle()
+
+  if (requestRow?.status === 'pending') {
+    await supabase.auth.signOut()
+    return { error: 'Your account is pending admin approval. Login is blocked until approval.' }
+  }
+
+  if (requestRow?.status === 'rejected') {
+    await supabase.auth.signOut()
+    return { error: 'Your registration request was not approved. Login is blocked.' }
+  }
+
+  if (requestRow?.status === 'approved' && !data.user?.email_confirmed_at) {
+    await supabase.auth.signOut()
+    const expired =
+      !!requestRow.verification_expires_at &&
+      Date.now() > new Date(requestRow.verification_expires_at).getTime()
+
+    if (expired) {
+      return { error: 'Verification link expired. Use Resend Verification Link to continue.' }
+    }
+
+    return { error: 'Please verify your email first. Then login will be enabled.' }
+  }
+
+  if (data.user?.email_confirmed_at && data.user?.id) {
+    await service
+      .from('investors')
+      .update({ is_active: true })
+      .eq('id', data.user.id)
+      .eq('is_active', false)
+
+    await service
+      .from('registration_requests')
+      .update({ status: 'active', verified_at: new Date().toISOString() })
+      .eq('email', email)
+      .eq('status', 'approved')
   }
 
   revalidatePath('/', 'layout')
@@ -118,6 +199,8 @@ export async function submitRegistrationRequestAction(formData: FormData) {
   if (!password || password.length < 8) {
     return { error: 'Password must be at least 8 characters' }
   }
+
+  const passwordHash = await hash(password, 12)
 
   if (!Number.isFinite(investedAmount) || investedAmount < 0) {
     return { error: 'Invested amount must be 0 or more' }
@@ -153,6 +236,14 @@ export async function submitRegistrationRequestAction(formData: FormData) {
     return { error: 'Registration request already submitted and pending admin approval.' }
   }
 
+  if (existingRequest && existingRequest.status === 'rejected') {
+    return { error: 'Your previous request was rejected. Contact admin to submit again.' }
+  }
+
+  if (existingRequest && (existingRequest.status === 'approved' || existingRequest.status === 'active')) {
+    return { error: 'This email is already approved. Please verify email and login.' }
+  }
+
   const { error } = await supabase.from('registration_requests').upsert(
     {
       name,
@@ -161,11 +252,15 @@ export async function submitRegistrationRequestAction(formData: FormData) {
       invested_amount: investedAmount,
       fixed_return_value: fixedReturnValue,
       fixed_return_percentage: fixedReturnPercentage,
-      temp_password: password,
+      temp_password: null,
+      temp_password_hash: passwordHash,
       status: 'pending',
       reviewed_at: null,
       reviewed_by: null,
       investor_id: null,
+      verified_at: null,
+      verification_sent_at: null,
+      verification_expires_at: null,
     },
     { onConflict: 'email' },
   )
@@ -202,4 +297,83 @@ export async function submitRegistrationRequestAction(formData: FormData) {
   }
 
   return { success: true }
+}
+
+export async function resendVerificationLinkAction(formData: FormData) {
+  const email = ((formData.get('email') as string) || '').trim().toLowerCase()
+  if (!email) {
+    return { error: 'Enter your email first.' }
+  }
+
+  const service = await createServiceClient()
+  const { data: request } = await service
+    .from('registration_requests')
+    .select('name, status')
+    .eq('email', email)
+    .maybeSingle()
+
+  if (!request) {
+    return { error: 'No registration found for this email.' }
+  }
+
+  if (request.status === 'pending') {
+    return { error: 'Your account is still pending admin approval.' }
+  }
+
+  if (request.status === 'rejected') {
+    return { error: 'Your registration request was not approved.' }
+  }
+
+  if (request.status === 'active') {
+    return { error: 'Your account is already active. Please login.' }
+  }
+
+  const userLookup = await findAuthUserIdByEmail(email)
+  if (userLookup.error) {
+    return { error: userLookup.error }
+  }
+
+  if (!userLookup.userId) {
+    return { error: 'Account setup is incomplete. Please contact admin.' }
+  }
+
+  const { data: userData, error: userError } = await service.auth.admin.getUserById(userLookup.userId)
+  if (userError) {
+    return { error: userError.message }
+  }
+
+  if (userData.user?.email_confirmed_at) {
+    await service
+      .from('registration_requests')
+      .update({ status: 'active', verified_at: new Date().toISOString() })
+      .eq('email', email)
+      .eq('status', 'approved')
+
+    return { success: true, message: 'Email already verified. Please login now.' }
+  }
+
+  const expiresAt = new Date(Date.now() + VERIFICATION_WINDOW_HOURS * 60 * 60 * 1000)
+
+  const { error: resendError } = await service.auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/login`,
+    },
+  })
+
+  if (resendError) {
+    return { error: resendError.message }
+  }
+
+  await service
+    .from('registration_requests')
+    .update({
+      verification_sent_at: new Date().toISOString(),
+      verification_expires_at: expiresAt.toISOString(),
+    })
+    .eq('email', email)
+    .eq('status', 'approved')
+
+  return { success: true, message: 'Verification email sent. Please check your inbox.' }
 }

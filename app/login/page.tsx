@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
-import { loginAction, submitRegistrationRequestAction } from '@/lib/actions/auth'
+import { loginAction, resendVerificationLinkAction, submitRegistrationRequestAction } from '@/lib/actions/auth'
 import { HeroItem } from '@/components/Animate'
 import BrandLogo from '@/components/BrandLogo'
 
@@ -40,6 +40,7 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false)
   const [showRegPw, setShowRegPw] = useState(false)
   const [showRegConfirmPw, setShowRegConfirmPw] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
 
   const loginForm = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) })
   const registerForm = useForm({
@@ -93,6 +94,27 @@ export default function LoginPage() {
     setMode('login')
   }
 
+  async function onResendVerification() {
+    const email = loginForm.getValues('email')?.trim()
+    if (!email) {
+      toast.error('Enter your email first to resend verification.')
+      return
+    }
+
+    setResendLoading(true)
+    const fd = new FormData()
+    fd.append('email', email)
+    const result = await resendVerificationLinkAction(fd)
+    setResendLoading(false)
+
+    if (result?.error) {
+      toast.error(result.error)
+      return
+    }
+
+    toast.success(result?.message ?? 'Verification email sent.')
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy-deep px-4">
       <div className="w-full max-w-md">
@@ -110,7 +132,7 @@ export default function LoginPage() {
             <CardDescription>
               {mode === 'login'
                 ? 'Enter your credentials to access your dashboard'
-                : 'Submit your details. Admin will verify and activate your account.'}
+                : 'Submit details. Admin approves first, then you verify email and login.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -184,6 +206,24 @@ export default function LoginPage() {
                     'Sign In'
                   )}
                 </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onResendVerification}
+                  disabled={resendLoading || isSubmitting}
+                  className="w-full border-gold/30 text-gold hover:bg-gold/10"
+                >
+                  {resendLoading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+                  ) : (
+                    'Resend Verification Link'
+                  )}
+                </Button>
+
+                <p className="text-center text-xs text-muted-foreground">
+                  Use this only after admin approval if your verification link expired.
+                </p>
               </form>
             ) : (
               <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">

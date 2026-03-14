@@ -112,7 +112,7 @@ export async function approveRegistrationRequestAction(formData: FormData) {
 
   const { data: request, error: requestError } = await supabase
     .from('registration_requests')
-    .select('id, name, email, phone, invested_amount, fixed_return_value, fixed_return_percentage, status, temp_password')
+    .select('id, name, email, phone, invested_amount, fixed_return_value, fixed_return_percentage, status, temp_password_hash')
     .eq('id', requestId)
     .single()
 
@@ -124,10 +124,14 @@ export async function approveRegistrationRequestAction(formData: FormData) {
     return { error: 'This request is no longer pending' }
   }
 
+  if (!request.temp_password_hash) {
+    return { error: 'Missing secure password hash for this request.' }
+  }
+
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: request.email,
-    email_confirm: false,   // Supabase sends a confirmation email automatically
-    ...(request.temp_password ? { password: request.temp_password } : {}),
+    email_confirm: false,
+    password_hash: request.temp_password_hash,
   })
 
   if (authError || !authData.user) {
@@ -144,13 +148,15 @@ export async function approveRegistrationRequestAction(formData: FormData) {
     invested_amount: request.invested_amount,
     fixed_return_value: request.fixed_return_value,
     fixed_return_percentage: request.fixed_return_percentage,
-    is_active: true,
+    is_active: false,
   })
 
   if (profileError) {
     await supabase.auth.admin.deleteUser(userId)
     return { error: profileError.message }
   }
+
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
   const { error: markError } = await supabase
     .from('registration_requests')
@@ -160,6 +166,9 @@ export async function approveRegistrationRequestAction(formData: FormData) {
       reviewed_by: adminData.user?.id ?? null,
       investor_id: userId,
       temp_password: null,
+      temp_password_hash: null,
+      verification_sent_at: new Date().toISOString(),
+      verification_expires_at: expiresAt,
     })
     .eq('id', request.id)
 
@@ -167,7 +176,114 @@ export async function approveRegistrationRequestAction(formData: FormData) {
     return { error: markError.message }
   }
 
-  // Supabase automatically sends a confirmation email because email_confirm: false
-  // The investor clicks the link → account confirmed → logs in with their password
+  const { error: resendError } = await supabase.auth.resend({
+    type: 'signup',
+    email: request.email,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/login`,
+    },
+  })
+
+  if (resendError) {
+    return { success: true, emailSent: false, emailError: resendError.message }
+  }
+
+  return { success: true, emailSent: true, emailError: null }
+}
+
+async function findAuthUserIdByEmail(email: string) {
+  const supabase = await createServiceClient()
+  let page = 1
+
+  while (page <= 10) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 })
+    if (error) {
+      return { userId: null, error: error.message }
+    }
+
+    const found = data.users.find((u) => (u.email || '').toLowerCase() === email.toLowerCase())
+    if (found) {
+      return { userId: found.id, error: null }
+    }
+
+    if (data.users.length < 200) break
+    page += 1
+  }
+
+  return { userId: null, error: null }
+}
+
+export async function rejectRegistrationRequestAction(formData: FormData) {
+  const authz = await requireAdmin()
+  if ('error' in authz) return authz
+
+  const requestId = formData.get('requestId') as string
+  if (!requestId) return { error: 'Missing request ID' }
+
+  const supabase = await createServiceClient()
+  const { data: adminData } = await supabase.auth.getUser()
+
+  const { data: request, error: requestError } = await supabase
+    .from('registration_requests')
+    .select('id, name, email, status')
+    .eq('id', requestId)
+    .single()
+
+  if (requestError || !request) {
+    return { error: requestError?.message ?? 'Registration request not found' }
+  }
+
+  if (request.status !== 'pending') {
+    return { error: 'This request is no longer pending' }
+  }
+
+  const { error: rejectError } = await supabase
+    .from('registration_requests')
+    .update({
+      status: 'rejected',
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: adminData.user?.id ?? null,
+      investor_id: null,
+      verification_sent_at: null,
+      verification_expires_at: null,
+    })
+    .eq('id', request.id)
+
+  if (rejectError) return { error: rejectError.message }
+
+  const userLookup = await findAuthUserIdByEmail(request.email)
+  if (userLookup.userId) {
+    const { data: userData } = await supabase.auth.admin.getUserById(userLookup.userId)
+    if (userData.user && !userData.user.email_confirmed_at) {
+      await supabase.auth.admin.deleteUser(userLookup.userId)
+    }
+  }
+
+  if (!process.env.RESEND_API_KEY) {
+    return { success: true, emailSent: false, emailError: 'RESEND_API_KEY is not configured.' }
+  }
+
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const { error: sendError } = await resend.emails.send({
+      from: `RK Trading <noreply@${process.env.RESEND_DOMAIN ?? 'rktrading.in'}>`,
+      to: request.email,
+      subject: 'Your registration request was not approved',
+      html: `
+        <div style="font-family:sans-serif;max-width:560px;margin:auto;background:#111b2e;color:#e8eaf0;padding:32px;border-radius:12px;border:1px solid rgba(212,175,55,0.3)">
+          <h1 style="color:#d4af37;margin-top:0">Hi ${request.name},</h1>
+          <p>Your account request was not approved.</p>
+          <p>If you believe this is a mistake, please contact admin for assistance.</p>
+        </div>
+      `,
+    })
+
+    if (sendError) {
+      return { success: true, emailSent: false, emailError: sendError.message }
+    }
+  } catch (e) {
+    return { success: true, emailSent: false, emailError: e instanceof Error ? e.message : 'Failed to send rejection email.' }
+  }
+
   return { success: true, emailSent: true, emailError: null }
 }
