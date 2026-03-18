@@ -50,8 +50,8 @@ const guidelines = [
 ]
 
 export default function PremiumPage() {
-  const whatsappJoinUrl = process.env.NEXT_PUBLIC_PREMIUM_WHATSAPP_URL || '/contact'
-  const telegramJoinUrl = process.env.NEXT_PUBLIC_PREMIUM_TELEGRAM_URL || '/contact'
+  const whatsappJoinUrl = process.env.NEXT_PUBLIC_PREMIUM_WHATSAPP_URL || 'https://wa.me/'
+  const telegramJoinUrl = process.env.NEXT_PUBLIC_PREMIUM_TELEGRAM_URL || 'https://t.me/'
 
   return (
     <div className="py-20">
