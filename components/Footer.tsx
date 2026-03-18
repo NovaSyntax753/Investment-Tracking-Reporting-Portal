@@ -26,7 +26,16 @@ export default function Footer() {
           <nav className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/about" className="hover:text-gold transition-colors">About</Link>
             <Link href="/services" className="hover:text-gold transition-colors">Services</Link>
+            <Link href="/premium" className="hover:text-gold transition-colors">Premium</Link>
             <Link href="/contact" className="hover:text-gold transition-colors">Contact</Link>
+            <Link
+              href="https://www.instagram.com/rksmartmoney_?igsh=bnkxYnJteXN6NHo0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gold transition-colors"
+            >
+              Instagram
+            </Link>
             <Link href="/login" className="hover:text-gold transition-colors">Login</Link>
           </nav>
 

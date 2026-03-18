@@ -64,18 +64,22 @@ alter table public.monthly_reports enable row level security;
 alter table public.contacts        enable row level security;
 
 -- investors: each user can only read their own row
+drop policy if exists "investors_select_own" on public.investors;
 create policy "investors_select_own" on public.investors
   for select using (auth.uid() = id);
 
 -- daily_updates: each investor reads only their own rows
+drop policy if exists "daily_updates_select_own" on public.daily_updates;
 create policy "daily_updates_select_own" on public.daily_updates
   for select using (auth.uid() = investor_id);
 
 -- monthly_reports: each investor reads only their own rows
+drop policy if exists "monthly_reports_select_own" on public.monthly_reports;
 create policy "monthly_reports_select_own" on public.monthly_reports
   for select using (auth.uid() = investor_id);
 
 -- contacts: anyone can insert (public contact form); no public reads
+drop policy if exists "contacts_insert_public" on public.contacts;
 create policy "contacts_insert_public" on public.contacts
   for insert with check (true);
 

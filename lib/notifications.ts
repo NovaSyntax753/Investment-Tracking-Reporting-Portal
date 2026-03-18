@@ -85,3 +85,55 @@ export async function sendReportReadyEmail(to: string, name: string, month: stri
     `,
   })
 }
+
+type MonthlySummaryEmailPayload = {
+  openingAmount: number
+  closingAmount: number
+  highestAmount: number
+  lowestAmount: number
+  averageAmount: number
+  pnlAmount: number
+  pnlPercentage: number
+  tradingDays: number
+}
+
+export async function sendMonthlySummaryEmail(
+  to: string,
+  name: string,
+  month: string,
+  summary: MonthlySummaryEmailPayload,
+) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const up = summary.pnlAmount >= 0
+  const pnlColor = up ? '#34d399' : '#f87171'
+
+  await resend.emails.send({
+    from: `RK Trading <noreply@${process.env.RESEND_DOMAIN ?? 'rktrading.in'}>`,
+    to,
+    subject: `Monthly Performance Report - ${month}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:620px;margin:auto;background:#111b2e;color:#e8eaf0;padding:28px;border-radius:12px;border:1px solid rgba(212,175,55,0.3)">
+        <h2 style="color:#d4af37;margin-top:0">Monthly Report</h2>
+        <p>Hi ${name},</p>
+        <p>Your report for <strong>${month}</strong> is generated from your daily updates.</p>
+
+        <table style="width:100%;border-collapse:collapse;margin:18px 0;background:#0d1526;border-radius:10px;overflow:hidden">
+          <tbody>
+            <tr><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15)">Opening</td><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15);text-align:right">${fmt(summary.openingAmount)}</td></tr>
+            <tr><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15)">Closing</td><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15);text-align:right">${fmt(summary.closingAmount)}</td></tr>
+            <tr><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15)">Highest</td><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15);text-align:right">${fmt(summary.highestAmount)}</td></tr>
+            <tr><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15)">Lowest</td><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15);text-align:right">${fmt(summary.lowestAmount)}</td></tr>
+            <tr><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15)">Average</td><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15);text-align:right">${fmt(summary.averageAmount)}</td></tr>
+            <tr><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15)">Trading Days</td><td style="padding:10px 14px;border-bottom:1px solid rgba(212,175,55,0.15);text-align:right">${summary.tradingDays}</td></tr>
+            <tr><td style="padding:10px 14px">Month P/L</td><td style="padding:10px 14px;text-align:right;color:${pnlColor};font-weight:700">${up ? '+' : ''}${fmt(summary.pnlAmount)} (${summary.pnlPercentage.toFixed(2)}%)</td></tr>
+          </tbody>
+        </table>
+
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/reports"
+           style="display:inline-block;margin-top:10px;padding:12px 24px;background:#d4af37;color:#0a0f1e;font-weight:700;text-decoration:none;border-radius:6px;">
+          View in Investor Dashboard
+        </a>
+      </div>
+    `,
+  })
+}

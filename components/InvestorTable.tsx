@@ -28,6 +28,7 @@ import { deleteInvestorAction } from '@/lib/actions/investors'
 
 export interface Investor {
   id: string
+  investor_code: string | null
   name: string
   email: string
   phone: string | null
@@ -117,6 +118,7 @@ export default function InvestorTable({
       <Table>
         <TableHeader>
           <TableRow className="border-gold/20 bg-charcoal hover:bg-charcoal">
+            <TableHead className="text-muted-foreground text-xs uppercase tracking-widest">Investor ID</TableHead>
             <TableHead className="text-muted-foreground text-xs uppercase tracking-widest">Name</TableHead>
             <TableHead className="text-muted-foreground text-xs uppercase tracking-widest">Email</TableHead>
             <TableHead className="text-muted-foreground text-xs uppercase tracking-widest text-right">Invested</TableHead>
@@ -129,6 +131,7 @@ export default function InvestorTable({
         <TableBody>
           {investors.map((inv) => (
             <TableRow key={inv.id} className="border-gold/10 hover:bg-charcoal/50 transition-colors">
+              <TableCell className="font-mono text-xs text-gold">{inv.investor_code ?? '—'}</TableCell>
               <TableCell className="font-medium">{inv.name}</TableCell>
               <TableCell className="text-muted-foreground text-sm">{inv.email}</TableCell>
               <TableCell className="text-right terminal-text font-tabular">{fmt(inv.invested_amount)}</TableCell>

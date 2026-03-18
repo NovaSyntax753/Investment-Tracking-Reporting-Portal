@@ -15,8 +15,8 @@ export default async function AdminReportsPage() {
       <div>
         <h1 className="text-2xl font-bold">Upload Monthly Report</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Upload a PDF report for an investor. They will receive an email notification
-          and can download it from their dashboard.
+          Monthly summaries are auto-generated from daily updates at the start of each month.
+          Use this section only when you need to upload a custom PDF report manually.
         </p>
       </div>
 

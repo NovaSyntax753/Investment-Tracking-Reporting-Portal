@@ -17,6 +17,12 @@ import { createInvestorAction } from '@/lib/actions/investors'
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Enter a valid email'),
+  investor_code: z
+    .string()
+    .min(4, 'Investor ID must be at least 4 characters')
+    .max(20, 'Investor ID must be 20 characters or less')
+    .regex(/^[A-Za-z0-9_-]+$/, 'Use letters, numbers, underscore, or hyphen only'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().optional(),
   invested_amount: z.coerce.number().positive('Must be positive'),
   fixed_return_value: z.coerce.number().min(0, 'Must be 0 or more'),
@@ -41,7 +47,7 @@ export default function NewInvestorPage() {
     if (res?.error) {
       toast.error(res.error)
     } else {
-      toast.success('Investor created — login email sent')
+      toast.success('Investor account created with admin-set credentials')
       router.push('/admin/investors')
     }
   }
@@ -54,7 +60,7 @@ export default function NewInvestorPage() {
         </Link>
         <h1 className="text-2xl font-bold">New Investor</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Creates a Supabase Auth account and sends a password-set email to the investor.
+          Admin creates Investor ID and password directly in backend.
         </p>
       </div>
 
@@ -75,6 +81,19 @@ export default function NewInvestorPage() {
                 <Label htmlFor="email">Email Address *</Label>
                 <Input id="email" type="email" placeholder="rahul@example.com" className="bg-navy border-gold/20 focus:border-gold" {...register('email')} />
                 {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+              </div>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="investor_code">Investor ID *</Label>
+                <Input id="investor_code" placeholder="INV-1001" className="bg-navy border-gold/20 focus:border-gold uppercase" {...register('investor_code')} />
+                {errors.investor_code && <p className="text-xs text-destructive">{errors.investor_code.message}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Initial Password *</Label>
+                <Input id="password" type="text" placeholder="Minimum 8 characters" className="bg-navy border-gold/20 focus:border-gold" {...register('password')} />
+                {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
               </div>
             </div>
 

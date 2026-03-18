@@ -13,13 +13,17 @@ export default async function ReportsPage() {
 
   const { data: reports } = await supabase
     .from('monthly_reports')
-    .select('id, report_month, document_url, uploaded_at')
+    .select('id, report_month, document_url, uploaded_at, auto_generated, opening_amount, closing_amount, average_amount, pnl_amount, pnl_percentage, trading_days')
     .eq('investor_id', user.id)
     .order('uploaded_at', { ascending: false })
 
   // Generate signed URLs for each report
   const reportsWithUrls = await Promise.all(
     (reports ?? []).map(async (r) => {
+      if (!r.document_url) {
+        return { ...r, signedUrl: null }
+      }
+
       const { data } = await supabase.storage
         .from('monthly-reports')
         .createSignedUrl(r.document_url, 60 * 60) // 1 hour
@@ -63,6 +67,16 @@ export default async function ReportsPage() {
                 </div>
               </div>
 
+              {r.auto_generated ? (
+                <div className="mb-4 space-y-1 rounded-lg border border-gold/20 bg-navy/40 p-3 text-xs">
+                  <p className="flex items-center justify-between"><span className="text-muted-foreground">Opening</span><span>{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(r.opening_amount ?? 0)}</span></p>
+                  <p className="flex items-center justify-between"><span className="text-muted-foreground">Closing</span><span>{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(r.closing_amount ?? 0)}</span></p>
+                  <p className="flex items-center justify-between"><span className="text-muted-foreground">Average</span><span>{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(r.average_amount ?? 0)}</span></p>
+                  <p className="flex items-center justify-between"><span className="text-muted-foreground">Trading Days</span><span>{r.trading_days ?? 0}</span></p>
+                  <p className="flex items-center justify-between"><span className="text-muted-foreground">P/L</span><span className={(r.pnl_amount ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}>{(r.pnl_amount ?? 0) >= 0 ? '+' : ''}{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(r.pnl_amount ?? 0)} ({Number(r.pnl_percentage ?? 0).toFixed(2)}%)</span></p>
+                </div>
+              ) : null}
+
               {r.signedUrl ? (
                 <a
                   href={r.signedUrl}
@@ -74,6 +88,10 @@ export default async function ReportsPage() {
                   <FileDown className="mr-2 h-4 w-4 text-gold" />
                   Download PDF
                 </a>
+              ) : r.auto_generated ? (
+                <Button disabled size="sm" variant="outline" className="w-full border-gold/20">
+                  Auto-generated from daily updates
+                </Button>
               ) : (
                 <Button disabled size="sm" variant="outline" className="w-full border-gold/20">
                   Link unavailable

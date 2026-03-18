@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Investment Tracking and Reporting Portal
 
-## Getting Started
+Admin-managed investor portal built with Next.js + Supabase.
 
-First, run the development server:
+## Implemented Business Flow
+
+1. Admin creates investor accounts in backend with:
+	- Investor ID (`investor_code`)
+	- Password
+	- Investment profile fields
+2. Admin posts daily updates.
+3. Investors receive notifications for daily updates (email + SMS + WhatsApp when configured).
+4. At the start of a new month, the system auto-generates each investor's previous-month report from daily updates.
+5. Investors receive the monthly report directly by email and can view monthly summaries in their dashboard.
+
+## Setup
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Required Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `NEXT_PUBLIC_APP_URL`
 
-## Learn More
+Optional notification providers:
 
-To learn more about Next.js, take a look at the following resources:
+- `RESEND_API_KEY`
+- `RESEND_DOMAIN`
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_PHONE_NUMBER`
+- `TWILIO_WHATSAPP_FROM`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Optional Premium onboarding links:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `NEXT_PUBLIC_PREMIUM_WHATSAPP_URL`
+- `NEXT_PUBLIC_PREMIUM_TELEGRAM_URL`
 
-## Deploy on Vercel
+Optional login page registration contact:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `NEXT_PUBLIC_REGISTRATION_PHONE`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Monthly cron security:
+
+- `CRON_SECRET` (recommended)
+
+## Database Migration
+
+Apply all SQL files in `supabase/migrations` in order.
+
+Current sequence:
+
+- `001_initial_schema.sql`
+- `002_admin_credentials_and_auto_monthly_reports.sql`
+
+## Monthly Auto-Generation Endpoint
+
+The system exposes:
+
+- `POST /api/cron/monthly-reports`
+
+If `CRON_SECRET` is set, pass either:
+
+- `Authorization: Bearer <CRON_SECRET>`
+- or `x-cron-secret: <CRON_SECRET>`
+
+Schedule this endpoint to run on day 1 of every month (for example at `00:05`).

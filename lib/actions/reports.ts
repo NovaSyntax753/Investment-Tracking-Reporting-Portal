@@ -2,6 +2,7 @@
 
 import { createServiceClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/actions/guards'
+import { sendReportReadyEmail } from '@/lib/notifications'
 
 export async function uploadReportAction(formData: FormData) {
   const authz = await requireAdmin()
@@ -42,11 +43,18 @@ export async function uploadReportAction(formData: FormData) {
   if (storageError) return { error: storageError.message }
 
   // Insert monthly_reports row
-  const { error: dbError } = await supabase.from('monthly_reports').insert({
+  const { data: insertedReport, error: dbError } = await supabase
+    .from('monthly_reports')
+    .insert({
     investor_id: investorId,
     report_month: reportMonth,
     document_url: storagePath,
-  })
+      auto_generated: false,
+      generated_at: new Date().toISOString(),
+      notified: false,
+    })
+    .select('id')
+    .single()
 
   if (dbError) {
     // Attempt cleanup of uploaded file
@@ -54,17 +62,25 @@ export async function uploadReportAction(formData: FormData) {
     return { error: dbError.message }
   }
 
-  // Trigger email notification
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  fetch(`${baseUrl}/api/notify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type: 'monthly_report',
-      investorId,
-      reportMonth,
-    }),
-  }).catch(() => {})
+  const { data: investor } = await supabase
+    .from('investors')
+    .select('name, email')
+    .eq('id', investorId)
+    .maybeSingle()
+
+  if (investor?.email) {
+    try {
+      await sendReportReadyEmail(investor.email, investor.name, reportMonth)
+      if (insertedReport?.id) {
+        await supabase
+          .from('monthly_reports')
+          .update({ notified: true, delivered_at: new Date().toISOString() })
+          .eq('id', insertedReport.id)
+      }
+    } catch {
+      // Non-fatal: report is uploaded even when notification fails.
+    }
+  }
 
   return { success: true }
 }

@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Mail, Phone, MapPin, Loader2, CheckCircle2 } from 'lucide-react'
+import Link from 'next/link'
+import { Mail, Phone, MapPin, Instagram, Loader2, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitContactAction } from '@/lib/actions/contact'
 import { FadeUp, Stagger, StaggerItem } from '@/components/Animate'
@@ -21,6 +22,10 @@ const schema = z.object({
 })
 
 type FormData = z.infer<typeof schema>
+
+const CONTACT_EMAIL = 'rksmartmoney@gmail.com'
+const CONTACT_PHONE = '+91 95886 77762'
+const INSTAGRAM_URL = 'https://www.instagram.com/rksmartmoney_?igsh=bnkxYnJteXN6NHo0'
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false)
@@ -64,7 +69,9 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="font-semibold">Email</p>
-                <p className="text-sm text-muted-foreground">contact@rktrading.in</p>
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-sm text-muted-foreground hover:text-gold transition-colors">
+                  {CONTACT_EMAIL}
+                </a>
               </div>
             </div>
             </StaggerItem>
@@ -75,7 +82,27 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="font-semibold">WhatsApp / Phone</p>
-                <p className="text-sm text-muted-foreground">+91 98XXX XXXXX</p>
+                <a href="tel:+919588677762" className="text-sm text-muted-foreground hover:text-gold transition-colors">
+                  {CONTACT_PHONE}
+                </a>
+              </div>
+            </div>
+            </StaggerItem>
+            <StaggerItem>
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-charcoal">
+                <Instagram className="h-5 w-5 text-gold" />
+              </div>
+              <div>
+                <p className="font-semibold">Instagram</p>
+                <Link
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-gold transition-colors"
+                >
+                  @rksmartmoney_
+                </Link>
               </div>
             </div>
             </StaggerItem>
