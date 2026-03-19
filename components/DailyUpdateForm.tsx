@@ -79,7 +79,7 @@ export default function DailyUpdateForm({ investors }: { investors: Investor[] }
             ))}
           </SelectContent>
         </Select>
-        {errors.investorId && <p className="text-xs text-destructive">{errors.investorId.message}</p>}
+        {errors.investorId && <p className="text-sm text-destructive">{errors.investorId.message}</p>}
       </div>
 
       {/* EOD Amount */}
@@ -93,7 +93,7 @@ export default function DailyUpdateForm({ investors }: { investors: Investor[] }
           className="bg-navy border-gold/20 focus:border-gold terminal-text font-tabular"
           {...register('eodAmount')}
         />
-        {errors.eodAmount && <p className="text-xs text-destructive">{errors.eodAmount.message}</p>}
+        {errors.eodAmount && <p className="text-sm text-destructive">{errors.eodAmount.message}</p>}
       </div>
 
       {/* Date */}
@@ -105,7 +105,7 @@ export default function DailyUpdateForm({ investors }: { investors: Investor[] }
           className="bg-navy border-gold/20 focus:border-gold"
           {...register('updateDate')}
         />
-        {errors.updateDate && <p className="text-xs text-destructive">{errors.updateDate.message}</p>}
+        {errors.updateDate && <p className="text-sm text-destructive">{errors.updateDate.message}</p>}
       </div>
 
       {/* Trade notes */}

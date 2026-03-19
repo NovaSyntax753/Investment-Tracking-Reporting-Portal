@@ -40,8 +40,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         {/* Investor name — only visible on desktop */}
         <div className="hidden border-b border-gold/15 px-5 py-4 md:block">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest">Investor</p>
-          <p className="mt-1 font-semibold text-sm truncate">{investor?.name ?? user.email}</p>
+          <p className="text-sm text-muted-foreground uppercase tracking-widest">Investor</p>
+          <p className="mt-1 font-semibold text-base truncate">{investor?.name ?? user.email}</p>
         </div>
 
         {/* Nav — horizontal scroll on mobile, vertical on desktop */}
@@ -50,7 +50,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Link
               key={href}
               href={href}
-              className="flex shrink-0 items-center gap-2 rounded-lg border border-gold/20 bg-navy px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-charcoal hover:text-foreground md:border-transparent md:bg-transparent md:gap-3 md:px-3 md:py-2.5"
+              className="flex shrink-0 items-center gap-2 rounded-lg border border-gold/20 bg-navy px-3 py-2 text-base font-medium text-muted-foreground transition-colors hover:bg-charcoal hover:text-foreground md:border-transparent md:bg-transparent md:gap-3 md:px-3 md:py-2.5"
             >
               {icon}
               <span className="whitespace-nowrap">{label}</span>
@@ -76,7 +76,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Main */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <header className="border-b border-gold/15 bg-navy px-4 py-3 md:px-8 md:py-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest">Investor Portal</p>
+          <p className="text-sm text-muted-foreground uppercase tracking-widest">Investor Portal</p>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
       </div>

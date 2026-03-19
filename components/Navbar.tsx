@@ -32,19 +32,19 @@ export default function Navbar() {
         <BrandLogo imageClassName="h-10 w-auto" />
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-9 md:flex">
           {navLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className={`text-sm font-medium transition-colors hover:text-gold ${
+              className={`text-xl font-semibold transition-colors hover:text-gold ${
                 pathname === href ? 'text-gold' : 'text-muted-foreground'
               }`}
             >
               {label}
             </Link>
           ))}
-          <Link href="/login" className={cn(buttonVariants({ size: 'sm' }), 'bg-gold text-navy-deep font-semibold hover:bg-gold-light')}>
+          <Link href="/login" className={cn(buttonVariants({ size: 'lg' }), 'bg-gold text-navy-deep text-lg font-semibold hover:bg-gold-light')}>
             Investor Login
           </Link>
         </nav>
@@ -69,20 +69,20 @@ export default function Navbar() {
           transition={{ duration: 0.25, ease: 'easeOut' }}
           className="overflow-hidden border-t border-gold/20 bg-navy-deep md:hidden"
         >
-          <nav className="flex flex-col gap-4 px-6 py-4">
+          <nav className="flex flex-col gap-5 px-6 py-5">
             {navLinks.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className={`text-sm font-medium transition-colors hover:text-gold ${
+                className={`text-xl font-semibold transition-colors hover:text-gold ${
                   pathname === href ? 'text-gold' : 'text-muted-foreground'
                 }`}
               >
                 {label}
               </Link>
             ))}
-            <Link href="/login" onClick={() => setOpen(false)} className={cn(buttonVariants({ size: 'sm' }), 'bg-gold text-navy-deep font-semibold w-full justify-center')}>
+            <Link href="/login" onClick={() => setOpen(false)} className={cn(buttonVariants({ size: 'lg' }), 'bg-gold text-navy-deep text-lg font-semibold w-full justify-center')}>
               Investor Login
             </Link>
           </nav>

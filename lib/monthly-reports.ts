@@ -6,6 +6,8 @@ type InvestorRow = {
   id: string
   name: string
   email: string
+  released_amount: number
+  unreleased_amount: number
 }
 
 type DailyUpdateRow = {
@@ -63,7 +65,7 @@ export async function generateMonthlyReportsForPreviousMonth(referenceDate = new
 
   const { data: investors, error: investorsError } = await supabase
     .from('investors')
-    .select('id, name, email')
+    .select('id, name, email, released_amount, unreleased_amount')
     .eq('is_active', true)
 
   if (investorsError) {
@@ -80,50 +82,62 @@ export async function generateMonthlyReportsForPreviousMonth(referenceDate = new
       .eq('investor_id', investor.id)
       .gte('update_date', window.monthStart)
       .lte('update_date', window.monthEnd)
+      .eq('status', 'completed')
       .order('update_date', { ascending: true })
 
     if (updatesError) {
       skippedCount += 1
-      continue
+    } else {
+      const summary = calculateMonthlySummary((updates ?? []) as DailyUpdateRow[])
+      if (!summary) {
+        skippedCount += 1
+      } else {
+        const { error: upsertError } = await supabase
+          .from('monthly_reports')
+          .upsert(
+            {
+              investor_id: investor.id,
+              report_month: window.monthLabel,
+              document_url: null,
+              month_start: window.monthStart,
+              month_end: window.monthEnd,
+              opening_amount: summary.openingAmount,
+              closing_amount: summary.closingAmount,
+              highest_amount: summary.highestAmount,
+              lowest_amount: summary.lowestAmount,
+              average_amount: summary.averageAmount,
+              pnl_amount: summary.pnlAmount,
+              pnl_percentage: summary.pnlPercentage,
+              trading_days: summary.tradingDays,
+              auto_generated: true,
+              generated_at: new Date().toISOString(),
+              notified: false,
+              delivered_at: null,
+            },
+            { onConflict: 'investor_id,report_month' },
+          )
+
+        if (upsertError) {
+          skippedCount += 1
+        } else {
+          generatedCount += 1
+        }
+      }
     }
 
-    const summary = calculateMonthlySummary((updates ?? []) as DailyUpdateRow[])
-    if (!summary) {
+    const released = Number(investor.released_amount ?? 0)
+    const unreleased = Number(investor.unreleased_amount ?? 0)
+    const { error: rolloverError } = await supabase
+      .from('investors')
+      .update({
+        released_amount: released + unreleased,
+        unreleased_amount: 0,
+      })
+      .eq('id', investor.id)
+
+    if (rolloverError) {
       skippedCount += 1
-      continue
     }
-
-    const { error: upsertError } = await supabase
-      .from('monthly_reports')
-      .upsert(
-        {
-          investor_id: investor.id,
-          report_month: window.monthLabel,
-          document_url: null,
-          month_start: window.monthStart,
-          month_end: window.monthEnd,
-          opening_amount: summary.openingAmount,
-          closing_amount: summary.closingAmount,
-          highest_amount: summary.highestAmount,
-          lowest_amount: summary.lowestAmount,
-          average_amount: summary.averageAmount,
-          pnl_amount: summary.pnlAmount,
-          pnl_percentage: summary.pnlPercentage,
-          trading_days: summary.tradingDays,
-          auto_generated: true,
-          generated_at: new Date().toISOString(),
-          notified: false,
-          delivered_at: null,
-        },
-        { onConflict: 'investor_id,report_month' },
-      )
-
-    if (upsertError) {
-      skippedCount += 1
-      continue
-    }
-
-    generatedCount += 1
   }
 
   return {

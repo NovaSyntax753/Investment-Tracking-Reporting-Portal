@@ -35,7 +35,7 @@ export default async function ReportsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Monthly Reports</h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p className="text-muted-foreground text-base mt-1">
           Download your monthly performance reports
         </p>
       </div>
@@ -44,7 +44,7 @@ export default async function ReportsPage() {
         <div className="flex flex-col items-center justify-center rounded-xl border border-gold/20 bg-charcoal p-16 text-center">
           <FileText className="h-16 w-16 text-gold/30 mb-4" />
           <p className="font-semibold">No reports yet</p>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-base text-muted-foreground">
             Your fund manager will upload monthly reports here after each period closes.
           </p>
         </div>
@@ -61,14 +61,14 @@ export default async function ReportsPage() {
                 </div>
                 <div>
                   <p className="font-semibold">{r.report_month}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Uploaded {format(new Date(r.uploaded_at), 'dd MMM yyyy')}
                   </p>
                 </div>
               </div>
 
               {r.auto_generated ? (
-                <div className="mb-4 space-y-1 rounded-lg border border-gold/20 bg-navy/40 p-3 text-xs">
+                <div className="mb-4 space-y-1 rounded-lg border border-gold/20 bg-navy/40 p-3 text-sm">
                   <p className="flex items-center justify-between"><span className="text-muted-foreground">Opening</span><span>{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(r.opening_amount ?? 0)}</span></p>
                   <p className="flex items-center justify-between"><span className="text-muted-foreground">Closing</span><span>{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(r.closing_amount ?? 0)}</span></p>
                   <p className="flex items-center justify-between"><span className="text-muted-foreground">Average</span><span>{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(r.average_amount ?? 0)}</span></p>

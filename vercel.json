@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/monthly-reports", "schedule": "5 0 1 * *" },
+    { "path": "/api/cron/eod-accumulate", "schedule": "5 0 * * *" }
+  ]
+}

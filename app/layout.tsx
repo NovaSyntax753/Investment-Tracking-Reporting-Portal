@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Investment Portal',
   description: 'Secure investment tracking and reporting platform',
+  icons: {
+    icon: '/logo-image.jpeg',
+    shortcut: '/logo-image.jpeg',
+    apple: '/logo-image.jpeg',
+  },
 }
 
 export default function RootLayout({

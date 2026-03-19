@@ -22,6 +22,7 @@ export async function createInvestorAction(formData: FormData) {
   const password = (formData.get('password') as string) || ''
   const phone = normalizePhone(formData.get('phone') as string)
   const invested_amount = parseFloat(formData.get('invested_amount') as string)
+  const prior_released_amount = parseFloat((formData.get('prior_released_amount') as string) || '0')
   const fixed_return_value = parseFloat(formData.get('fixed_return_value') as string)
   const fixed_return_percentage = parseFloat(formData.get('fixed_return_percentage') as string)
 
@@ -85,6 +86,7 @@ export async function createInvestorAction(formData: FormData) {
     investor_code: investorCode,
     phone,
     invested_amount,
+    prior_released_amount: Number.isFinite(prior_released_amount) ? prior_released_amount : 0,
     fixed_return_value,
     fixed_return_percentage,
     is_active: true,

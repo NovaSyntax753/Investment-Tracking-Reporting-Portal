@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { Trash2, Loader2 } from 'lucide-react'
+import { Trash2, Loader2, ChevronRight } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -118,26 +119,31 @@ export default function InvestorTable({
       <Table>
         <TableHeader>
           <TableRow className="border-gold/20 bg-charcoal hover:bg-charcoal">
-            <TableHead className="text-muted-foreground text-xs uppercase tracking-widest">Investor ID</TableHead>
-            <TableHead className="text-muted-foreground text-xs uppercase tracking-widest">Name</TableHead>
-            <TableHead className="text-muted-foreground text-xs uppercase tracking-widest">Email</TableHead>
-            <TableHead className="text-muted-foreground text-xs uppercase tracking-widest text-right">Invested</TableHead>
-            <TableHead className="text-muted-foreground text-xs uppercase tracking-widest text-right">Fixed Return</TableHead>
-            <TableHead className="text-muted-foreground text-xs uppercase tracking-widest">Status</TableHead>
-            <TableHead className="text-muted-foreground text-xs uppercase tracking-widest">Joined</TableHead>
+            <TableHead className="text-muted-foreground text-sm uppercase tracking-widest">Investor ID</TableHead>
+            <TableHead className="text-muted-foreground text-sm uppercase tracking-widest">Name</TableHead>
+            <TableHead className="text-muted-foreground text-sm uppercase tracking-widest">Email</TableHead>
+            <TableHead className="text-muted-foreground text-sm uppercase tracking-widest text-right">Invested</TableHead>
+            <TableHead className="text-muted-foreground text-sm uppercase tracking-widest text-right">Fixed Return</TableHead>
+            <TableHead className="text-muted-foreground text-sm uppercase tracking-widest">Status</TableHead>
+            <TableHead className="text-muted-foreground text-sm uppercase tracking-widest">Joined</TableHead>
             <TableHead className="w-16" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {investors.map((inv) => (
             <TableRow key={inv.id} className="border-gold/10 hover:bg-charcoal/50 transition-colors">
-              <TableCell className="font-mono text-xs text-gold">{inv.investor_code ?? '—'}</TableCell>
-              <TableCell className="font-medium">{inv.name}</TableCell>
-              <TableCell className="text-muted-foreground text-sm">{inv.email}</TableCell>
+              <TableCell className="font-mono text-sm text-gold">{inv.investor_code ?? '—'}</TableCell>
+              <TableCell className="font-medium">
+                <Link href={`/admin/investors/${inv.id}`} className="inline-flex items-center gap-2 hover:text-gold transition-colors">
+                  {inv.name}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              </TableCell>
+              <TableCell className="text-muted-foreground text-base">{inv.email}</TableCell>
               <TableCell className="text-right terminal-text font-tabular">{fmt(inv.invested_amount)}</TableCell>
               <TableCell className="text-right terminal-text font-tabular text-gold">
                 {fmt(inv.fixed_return_value)}{' '}
-                <span className="text-xs text-muted-foreground">({inv.fixed_return_percentage}%)</span>
+                <span className="text-sm text-muted-foreground">({inv.fixed_return_percentage}%)</span>
               </TableCell>
               <TableCell>
                 <Badge
@@ -149,11 +155,16 @@ export default function InvestorTable({
                   {inv.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
+              <TableCell className="text-base text-muted-foreground">
                 {format(new Date(inv.created_at), 'dd MMM yyyy')}
               </TableCell>
               <TableCell>
-                <DeleteDialog investor={inv} onDeleted={() => handleDeleted(inv.id)} />
+                <div className="flex items-center justify-end gap-1">
+                  <Link href={`/admin/investors/${inv.id}`} className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'text-muted-foreground hover:text-gold')} aria-label={`View ${inv.name}`}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                  <DeleteDialog investor={inv} onDeleted={() => handleDeleted(inv.id)} />
+                </div>
               </TableCell>
             </TableRow>
           ))}

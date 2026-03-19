@@ -56,20 +56,20 @@ export default async function AdminOverviewPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Overview</h1>
-        <p className="text-muted-foreground text-sm mt-1">Platform-wide statistics</p>
+        <p className="text-muted-foreground text-base mt-1">Platform-wide statistics</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
           <Card key={s.label} className="bg-charcoal border-gold/20">
-            <CardContent className="pt-5">
+            <CardContent className="px-5 pt-6">
               <div className="flex items-start justify-between">
-                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{s.label}</p>
+                <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">{s.label}</p>
                 {s.icon}
               </div>
-              <p className="mt-3 text-2xl font-bold terminal-text font-tabular text-foreground">{s.value}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{s.sub}</p>
+              <p className="mt-3 text-3xl font-bold terminal-text font-tabular text-foreground">{s.value}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{s.sub}</p>
             </CardContent>
           </Card>
         ))}
@@ -79,7 +79,7 @@ export default async function AdminOverviewPage() {
       <div>
         <h2 className="mb-4 text-lg font-semibold">Recent Daily Updates</h2>
         {!updates || updates.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No updates yet.</p>
+          <p className="text-muted-foreground text-base">No updates yet.</p>
         ) : (
           <div className="space-y-2">
             {updates.map((u) => {
@@ -91,12 +91,12 @@ export default async function AdminOverviewPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full bg-gold" />
-                    <span className="text-sm font-medium">{inv?.name ?? 'Unknown'}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-base font-medium">{inv?.name ?? 'Unknown'}</span>
+                    <span className="text-sm text-muted-foreground">
                       {format(new Date(u.update_date + 'T00:00:00'), 'dd MMM yyyy')}
                     </span>
                   </div>
-                  <span className="terminal-text font-tabular text-sm text-gold">
+                  <span className="terminal-text font-tabular text-base text-gold">
                     {fmt(u.eod_amount)}
                   </span>
                 </div>

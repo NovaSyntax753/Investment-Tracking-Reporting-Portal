@@ -23,7 +23,7 @@ export default function Footer() {
             </span>
           </Link>
 
-          <nav className="flex items-center gap-6 text-sm text-muted-foreground">
+          <nav className="flex items-center gap-6 text-base text-muted-foreground">
             <Link href="/about" className="hover:text-gold transition-colors">About</Link>
             <Link href="/services" className="hover:text-gold transition-colors">Services</Link>
             <Link href="/premium" className="hover:text-gold transition-colors">Premium</Link>
@@ -39,7 +39,7 @@ export default function Footer() {
             <Link href="/login" className="hover:text-gold transition-colors">Login</Link>
           </nav>
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} RK Trading. All rights reserved.
           </p>
         </div>

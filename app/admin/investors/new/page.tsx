@@ -25,6 +25,7 @@ const schema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().optional(),
   invested_amount: z.coerce.number().positive('Must be positive'),
+  prior_released_amount: z.coerce.number().min(0).optional().default(0),
   fixed_return_value: z.coerce.number().min(0, 'Must be 0 or more'),
   fixed_return_percentage: z.coerce.number().min(0).max(100, 'Must be between 0 and 100'),
 })
@@ -118,6 +119,22 @@ export default function NewInvestorPage() {
                 <Input id="fixed_return_percentage" type="number" step="0.01" placeholder="15" className="bg-navy border-gold/20 focus:border-gold terminal-text" {...register('fixed_return_percentage')} />
                 {errors.fixed_return_percentage && <p className="text-xs text-destructive">{errors.fixed_return_percentage.message}</p>}
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="prior_released_amount">Previously Released Amount (₹)</Label>
+              <Input
+                id="prior_released_amount"
+                type="number"
+                step="0.01"
+                placeholder="0 — leave blank for new clients"
+                className="bg-navy border-gold/20 focus:border-gold terminal-text"
+                {...register('prior_released_amount')}
+              />
+              <p className="text-xs text-muted-foreground">
+                For existing clients who had funds released before joining this portal
+              </p>
+              {errors.prior_released_amount && <p className="text-xs text-destructive">{errors.prior_released_amount.message}</p>}
             </div>
 
             <div className="flex gap-3 pt-2">

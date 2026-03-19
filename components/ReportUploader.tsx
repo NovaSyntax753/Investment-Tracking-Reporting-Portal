@@ -87,7 +87,7 @@ export default function ReportUploader({ investors }: { investors: Investor[] })
             ))}
           </SelectContent>
         </Select>
-        {errors.investorId && <p className="text-xs text-destructive">{errors.investorId.message}</p>}
+        {errors.investorId && <p className="text-sm text-destructive">{errors.investorId.message}</p>}
       </div>
 
       {/* Report month */}
@@ -99,7 +99,7 @@ export default function ReportUploader({ investors }: { investors: Investor[] })
           className="bg-navy border-gold/20 focus:border-gold"
           {...register('reportMonth')}
         />
-        {errors.reportMonth && <p className="text-xs text-destructive">{errors.reportMonth.message}</p>}
+        {errors.reportMonth && <p className="text-sm text-destructive">{errors.reportMonth.message}</p>}
       </div>
 
       {/* PDF upload */}
@@ -111,11 +111,11 @@ export default function ReportUploader({ investors }: { investors: Investor[] })
         >
           <Upload className="h-8 w-8 text-gold/60" />
           {file ? (
-            <p className="text-sm font-medium text-gold">{file.name}</p>
+            <p className="text-base font-medium text-gold">{file.name}</p>
           ) : (
             <>
-              <p className="text-sm font-medium">Click to upload PDF</p>
-              <p className="text-xs text-muted-foreground">PDF files only, max 20 MB</p>
+              <p className="text-base font-medium">Click to upload PDF</p>
+              <p className="text-sm text-muted-foreground">PDF files only, max 20 MB</p>
             </>
           )}
         </div>
