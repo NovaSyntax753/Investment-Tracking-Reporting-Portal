@@ -3,10 +3,10 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { updateDailyUpdateAction, deleteDailyUpdateAction, createOngoingEntryAction } from '@/lib/actions/updates'
-import { createMonthlyTransactionAction, deleteMonthlyTransactionAction } from '@/lib/actions/transactions'
+import { createMonthlyTransactionAction, deleteMonthlyTransactionAction, markMonthlyTransactionPaidAction } from '@/lib/actions/transactions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -412,6 +412,7 @@ export default function AdminInvestorDetailClient({
   const [updates, setUpdates] = useState(() => sortUpdatesDesc(initialUpdates))
   const [transactions, setTransactions] = useState(() => sortTransactionsDesc(initialTransactions))
   const [creatingOngoing, setCreatingOngoing] = useState(false)
+  const [markingTransactionId, setMarkingTransactionId] = useState<string | null>(null)
 
   const updatesWithPnl = useMemo(() => {
     return updates.map((u, i) => {
@@ -451,6 +452,24 @@ export default function AdminInvestorDetailClient({
     ]))
 
     toast.success('Ongoing entry added')
+    router.refresh()
+  }
+
+  async function handleMarkTransactionCompleted(id: string) {
+    setMarkingTransactionId(id)
+    const fd = new FormData()
+    fd.append('id', id)
+
+    const res = await markMonthlyTransactionPaidAction(fd)
+    setMarkingTransactionId(null)
+
+    if (res?.error) {
+      toast.error(res.error)
+      return
+    }
+
+    setTransactions((prev) => prev.map((txn) => (txn.id === id ? { ...txn, status: 'paid' } : txn)))
+    toast.success('Transaction marked as completed')
     router.refresh()
   }
 
@@ -588,17 +607,35 @@ export default function AdminInvestorDetailClient({
                           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                           : 'border-amber-500/30 bg-amber-500/10 text-amber-300'}
                       >
-                        {txn.status === 'paid' ? 'Paid' : 'Pending'}
+                        {txn.status === 'paid' ? 'Completed' : 'Pending'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <DeleteTransactionDialog
-                        id={txn.id}
-                        onDeleted={() => {
-                          setTransactions((prev) => prev.filter((item) => item.id !== txn.id))
-                          router.refresh()
-                        }}
-                      />
+                      <div className="inline-flex items-center gap-1">
+                        {txn.status !== 'paid' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-emerald-400 hover:text-emerald-300"
+                            onClick={() => handleMarkTransactionCompleted(txn.id)}
+                            disabled={markingTransactionId === txn.id}
+                          >
+                            {markingTransactionId === txn.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Check className="h-4 w-4" />
+                            )}
+                            <span className="ml-1">Complete</span>
+                          </Button>
+                        ) : null}
+                        <DeleteTransactionDialog
+                          id={txn.id}
+                          onDeleted={() => {
+                            setTransactions((prev) => prev.filter((item) => item.id !== txn.id))
+                            router.refresh()
+                          }}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

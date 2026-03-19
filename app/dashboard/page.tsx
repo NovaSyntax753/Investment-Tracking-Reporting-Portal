@@ -227,7 +227,7 @@ export default async function DashboardPage() {
                           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                           : 'border-amber-500/30 bg-amber-500/10 text-amber-300'}
                       >
-                        {txn.status === 'paid' ? 'Paid' : 'Pending'}
+                        {txn.status === 'paid' ? 'Completed' : 'Pending'}
                       </Badge>
                     </TableCell>
                   </TableRow>

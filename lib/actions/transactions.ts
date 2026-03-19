@@ -67,3 +67,24 @@ export async function deleteMonthlyTransactionAction(formData: FormData) {
   revalidatePath('/admin/investors')
   return { success: true }
 }
+
+// Mark a monthly transaction as completed/paid (admin only)
+export async function markMonthlyTransactionPaidAction(formData: FormData) {
+  const authz = await requireAdmin()
+  if ('error' in authz) return authz
+
+  const id = formData.get('id') as string
+  if (!id) return { error: 'Missing id' }
+
+  const supabase = await createServiceClient()
+  const { error } = await supabase
+    .from('monthly_transactions')
+    .update({ status: 'paid' })
+    .eq('id', id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/admin/investors')
+  return { success: true }
+}
