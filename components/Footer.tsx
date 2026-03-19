@@ -13,8 +13,8 @@ export default function Footer() {
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="border-t border-gold/20 bg-navy-deep py-10"
     >
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="flex flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
           <Link href="/" className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-gold" />
             <span className="font-bold">
@@ -23,7 +23,7 @@ export default function Footer() {
             </span>
           </Link>
 
-          <nav className="flex items-center gap-6 text-base text-muted-foreground">
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground sm:text-base md:justify-start">
             <Link href="/about" className="hover:text-gold transition-colors">About</Link>
             <Link href="/services" className="hover:text-gold transition-colors">Services</Link>
             <Link href="/premium" className="hover:text-gold transition-colors">Premium</Link>
@@ -39,7 +39,7 @@ export default function Footer() {
             <Link href="/login" className="hover:text-gold transition-colors">Login</Link>
           </nav>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground md:text-right">
             © {new Date().getFullYear()} RK Trading. All rights reserved.
           </p>
         </div>
