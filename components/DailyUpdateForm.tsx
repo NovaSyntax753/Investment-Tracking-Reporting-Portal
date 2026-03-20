@@ -29,7 +29,12 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function DailyUpdateForm({ investors }: { investors: Investor[] }) {
-  const [selectedInvestor, setSelectedInvestor] = useState('')
+  const [selectedInvestor, setSelectedInvestor] = useState('all')
+  const selectedInvestorLabel = selectedInvestor
+    ? selectedInvestor === 'all'
+      ? 'All Investors'
+      : (investors.find((i) => i.id === selectedInvestor)?.name || 'Unknown Investor')
+    : ''
 
   const {
     register,
@@ -39,7 +44,7 @@ export default function DailyUpdateForm({ investors }: { investors: Investor[] }
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { updateDate: format(new Date(), 'yyyy-MM-dd') },
+    defaultValues: { investorId: 'all', updateDate: format(new Date(), 'yyyy-MM-dd') },
   })
 
   async function onSubmit(data: FormData) {
@@ -55,8 +60,8 @@ export default function DailyUpdateForm({ investors }: { investors: Investor[] }
     } else {
       const label = data.investorId === 'all' ? 'All investors' : investors.find(i => i.id === data.investorId)?.name
       toast.success(`Daily update posted for ${label}`)
-      reset({ updateDate: format(new Date(), 'yyyy-MM-dd') })
-      setSelectedInvestor('')
+      reset({ investorId: 'all', updateDate: format(new Date(), 'yyyy-MM-dd') })
+      setSelectedInvestor('all')
     }
   }
 
@@ -70,12 +75,12 @@ export default function DailyUpdateForm({ investors }: { investors: Investor[] }
           onValueChange={(v) => { if (v) { setSelectedInvestor(v); setValue('investorId', v, { shouldValidate: true }) } }}
         >
           <SelectTrigger className="bg-navy border-gold/20">
-            <SelectValue placeholder="Select investor…" />
+            <SelectValue placeholder="Select investor...">{selectedInvestorLabel}</SelectValue>
           </SelectTrigger>
           <SelectContent className="bg-charcoal border-gold/20">
-            <SelectItem value="all" className="text-gold font-medium">📊 All Investors</SelectItem>
+            <SelectItem value="all" className="text-gold font-medium">All Investors</SelectItem>
             {investors.map((inv) => (
-              <SelectItem key={inv.id} value={inv.id}>{inv.name}</SelectItem>
+              <SelectItem key={inv.id} value={inv.id}>{inv.name || 'Unknown Investor'}</SelectItem>
             ))}
           </SelectContent>
         </Select>

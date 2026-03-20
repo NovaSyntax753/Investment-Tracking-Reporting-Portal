@@ -1,18 +1,21 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { Users, DollarSign, Activity, TrendingUp } from 'lucide-react'
 import { format } from 'date-fns'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 function fmt(n: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n)
 }
 
 export default async function AdminOverviewPage() {
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
 
   const [
-    { data: investors },
-    { data: updates },
+    { data: investors, error: investorsError },
+    { data: updates, error: updatesError },
   ] = await Promise.all([
     supabase.from('investors').select('id, name, invested_amount, is_active'),
     supabase
@@ -22,8 +25,16 @@ export default async function AdminOverviewPage() {
       .limit(10),
   ])
 
+  if (investorsError) {
+    return <p className="text-destructive text-sm">{investorsError.message}</p>
+  }
+
+  if (updatesError) {
+    return <p className="text-destructive text-sm">{updatesError.message}</p>
+  }
+
   const activeCount = investors?.filter((i) => i.is_active).length ?? 0
-  const totalAUM = investors?.reduce((sum, i) => sum + i.invested_amount, 0) ?? 0
+  const totalAUM = investors?.reduce((sum, i) => sum + Number(i.invested_amount ?? 0), 0) ?? 0
 
   const stats = [
     {
@@ -54,15 +65,20 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Overview</h1>
-        <p className="text-muted-foreground text-base mt-1">Platform-wide statistics</p>
+      <div className="flex items-center justify-between rounded-xl border border-gold/20 bg-gradient-to-r from-charcoal to-navy p-5">
+        <div>
+          <h1 className="text-2xl font-bold">Admin Console</h1>
+          <p className="text-muted-foreground text-base mt-1">Platform-wide statistics & management</p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1.5 text-sm font-medium text-gold">
+          Admin
+        </span>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
-          <Card key={s.label} className="bg-charcoal border-gold/20">
+          <Card key={s.label} className="bg-gradient-to-br from-charcoal to-navy border-gold/20 border-t-2 border-t-gold/60 card-glow">
             <CardContent className="px-5 pt-6">
               <div className="flex items-start justify-between">
                 <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">{s.label}</p>
@@ -70,6 +86,15 @@ export default async function AdminOverviewPage() {
               </div>
               <p className="mt-3 text-3xl font-bold terminal-text font-tabular text-foreground">{s.value}</p>
               <p className="mt-1 text-sm text-muted-foreground">{s.sub}</p>
+              <svg viewBox="0 0 120 16" className="w-full h-3 mt-3 opacity-25">
+                <polyline
+                  points="0,14 24,10 48,12 72,6 96,8 120,3"
+                  fill="none"
+                  stroke="#d4af37"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
             </CardContent>
           </Card>
         ))}

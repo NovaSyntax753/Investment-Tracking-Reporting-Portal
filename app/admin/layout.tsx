@@ -79,7 +79,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <header className="border-b border-gold/15 bg-navy px-4 py-3 md:px-8 md:py-4">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Admin Console</p>
         </header>
-        <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8 bg-line-grid">{children}</main>
       </div>
     </div>
   )

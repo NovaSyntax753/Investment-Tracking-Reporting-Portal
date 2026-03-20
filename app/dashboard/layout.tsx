@@ -78,7 +78,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <header className="border-b border-gold/15 bg-navy px-4 py-3 md:px-8 md:py-4">
           <p className="text-sm text-muted-foreground uppercase tracking-widest">Investor Portal</p>
         </header>
-        <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8 bg-line-grid">{children}</main>
       </div>
     </div>
   )

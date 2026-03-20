@@ -146,3 +146,77 @@
   .stat-down { color: #ef4444; }
   .terminal-text { font-family: var(--font-geist-mono), monospace; }
 }
+
+/* Glassmorphism card */
+.glass {
+  background: rgba(26, 32, 53, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+/* Gold shimmer animation */
+.shimmer-text {
+  background: linear-gradient(90deg, #d4af37, #f0d060, #d4af37);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+.shimmer-btn {
+  background: linear-gradient(90deg, #d4af37, #f0d060, #d4af37) !important;
+  background-size: 200% !important;
+  animation: shimmer 3s linear infinite !important;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Subtle dot grid background */
+.bg-dot-grid {
+  background-image: radial-gradient(rgba(212, 175, 55, 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Subtle line grid background */
+.bg-line-grid {
+  background-image:
+    linear-gradient(rgba(212, 175, 55, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Card glow on hover */
+.card-glow {
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.card-glow:hover {
+  border-color: rgba(212, 175, 55, 0.4) !important;
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.12), 0 0 60px rgba(212, 175, 55, 0.05);
+}
+
+/* Premium scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #0d1526; }
+::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.45); }
+
+/* Pulsing dot for live status */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+
+.pulse-dot-green { background: #10b981; }
+.pulse-dot-amber { background: #f59e0b; }
+
+@keyframes pulse-ring {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.35); }
+}

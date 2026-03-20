@@ -111,11 +111,15 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Welcome, {investor.name}</h1>
-        <p className="text-muted-foreground text-base mt-1">
-          Portfolio overview · Last 30 days
-        </p>
+      <div className="flex items-center justify-between rounded-xl border border-gold/20 bg-gradient-to-r from-charcoal to-navy p-5">
+        <div>
+          <h1 className="text-2xl font-bold">Welcome, {investor.name}</h1>
+          <p className="text-muted-foreground text-base mt-1">Portfolio overview · Last 30 days</p>
+        </div>
+        <div className="hidden items-center gap-2 text-sm sm:flex">
+          <span className="pulse-dot pulse-dot-green" />
+          <span className="text-sm font-medium text-emerald-400">Markets Active</span>
+        </div>
       </div>
 
       {/* Stats cards */}

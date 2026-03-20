@@ -82,18 +82,23 @@ export default function ServicesPage() {
   return (
     <div className="py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <FadeUp className="mb-14 text-center">
-          <p className="mb-3 text-2xl font-semibold uppercase tracking-widest text-gold">Services</p>
-          <h1 className="text-5xl font-extrabold sm:text-5xl">What We Offer</h1>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Detailed investor services designed for transparency, consistency, and reliable monthly outcomes.
-          </p>
-        </FadeUp>
+        <div className="relative mb-10 h-48 w-full overflow-hidden rounded-2xl">
+          <img
+            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1920&q=80"
+            alt="Financial charts"
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-navy-deep" />
+          <div className="absolute inset-0 flex items-end justify-center pb-6">
+            <h1 className="text-4xl font-extrabold text-white text-center">What We Offer</h1>
+          </div>
+        </div>
 
         <Stagger className="grid gap-8 md:grid-cols-2">
           {services.map((service) => (
             <StaggerItem key={service.title}>
-              <Card className="bg-charcoal border-gold/20 h-full">
+              <Card className="bg-charcoal border-gold/20 h-full card-glow">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-2xl text-gold">{service.title}</CardTitle>
                 </CardHeader>
@@ -106,7 +111,7 @@ export default function ServicesPage() {
         </Stagger>
 
         <div className="mt-8 grid gap-8 md:grid-cols-3">
-          <Card className="bg-charcoal border-gold/20">
+          <Card className="bg-charcoal border-gold/20 card-glow">
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl">Investor Dashboard</CardTitle>
             </CardHeader>
@@ -120,7 +125,7 @@ export default function ServicesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-charcoal border-gold/20">
+          <Card className="bg-charcoal border-gold/20 card-glow">
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl">Automated Notifications</CardTitle>
             </CardHeader>
@@ -134,7 +139,7 @@ export default function ServicesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-charcoal border-gold/20">
+          <Card className="bg-charcoal border-gold/20 card-glow">
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl">Monthly Reporting Includes</CardTitle>
             </CardHeader>
@@ -159,7 +164,7 @@ export default function ServicesPage() {
         <Stagger className="mt-10 grid gap-8 md:grid-cols-2">
           {workflowSteps.map((step) => (
             <StaggerItem key={step.title}>
-              <Card className="bg-charcoal border-gold/20 h-full">
+              <Card className="bg-charcoal border-gold/20 h-full card-glow">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-2xl text-gold">{step.title}</CardTitle>
                 </CardHeader>
@@ -172,7 +177,7 @@ export default function ServicesPage() {
         </Stagger>
 
         <div className="mt-12 grid gap-8 lg:grid-cols-2">
-          <Card className="bg-charcoal border-gold/20">
+          <Card className="bg-charcoal border-gold/20 card-glow">
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl text-gold">Our Commitment</CardTitle>
             </CardHeader>
@@ -186,7 +191,7 @@ export default function ServicesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-charcoal border-gold/20">
+          <Card className="bg-charcoal border-gold/20 card-glow">
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl text-gold">Investor Support</CardTitle>
             </CardHeader>

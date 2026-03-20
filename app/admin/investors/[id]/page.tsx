@@ -84,15 +84,25 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <Link href="/admin/investors" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-muted-foreground hover:text-foreground')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Investors
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">{investor.name}</h1>
-          <p className="text-muted-foreground text-sm mt-1">{investor.investor_code ?? '—'}</p>
+      <div className="flex items-center gap-5 rounded-xl border border-gold/20 bg-gradient-to-r from-charcoal to-navy p-6">
+        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border-2 border-gold/35 bg-gold/15">
+          <span className="text-xl font-bold text-gold">
+            {investor.name.charAt(0).toUpperCase()}
+          </span>
         </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold">{investor.name}</h1>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+              <span className="pulse-dot pulse-dot-green h-1.5 w-1.5" />
+              Active
+            </span>
+          </div>
+          <p className="mt-1 font-mono text-sm text-muted-foreground">{investor.investor_code ?? '—'}</p>
+        </div>
+        <Link href="/admin/investors" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-muted-foreground')}>
+          <ArrowLeft className="mr-2 h-4 w-4" />Back
+        </Link>
       </div>
 
       <DashboardStats

@@ -26,7 +26,7 @@ export default function Navbar() {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="sticky top-0 z-50 border-b border-gold bg-navy-deep/95 backdrop-blur-sm"
+      className="sticky top-0 z-50 border-b border-gold bg-navy-deep/80 backdrop-blur-md"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <BrandLogo imageClassName="h-10 w-auto" />
@@ -37,14 +37,16 @@ export default function Navbar() {
             <Link
               key={href}
               href={href}
-              className={`text-xl font-semibold transition-colors hover:text-gold ${
-                pathname === href ? 'text-gold' : 'text-muted-foreground'
+              className={`relative text-xl font-semibold transition-colors hover:text-gold ${
+                pathname === href
+                  ? 'text-gold after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-gold'
+                  : 'text-muted-foreground'
               }`}
             >
               {label}
             </Link>
           ))}
-          <Link href="/login" className={cn(buttonVariants({ size: 'lg' }), 'bg-gold text-navy-deep text-lg font-semibold hover:bg-gold-light')}>
+          <Link href="/login" className={cn(buttonVariants({ size: 'lg' }), 'shimmer-btn px-8 text-lg font-bold text-navy-deep hover:opacity-90')}>
             Investor Login
           </Link>
         </nav>
@@ -75,14 +77,16 @@ export default function Navbar() {
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className={`text-xl font-semibold transition-colors hover:text-gold ${
-                  pathname === href ? 'text-gold' : 'text-muted-foreground'
+                className={`relative text-xl font-semibold transition-colors hover:text-gold ${
+                  pathname === href
+                    ? 'text-gold after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-gold'
+                    : 'text-muted-foreground'
                 }`}
               >
                 {label}
               </Link>
             ))}
-            <Link href="/login" onClick={() => setOpen(false)} className={cn(buttonVariants({ size: 'lg' }), 'bg-gold text-navy-deep text-lg font-semibold w-full justify-center')}>
+            <Link href="/login" onClick={() => setOpen(false)} className={cn(buttonVariants({ size: 'lg' }), 'shimmer-btn w-full justify-center text-lg font-bold text-navy-deep hover:opacity-90')}>
               Investor Login
             </Link>
           </nav>

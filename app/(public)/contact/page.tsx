@@ -61,7 +61,20 @@ export default function ContactPage() {
 
         <div className="grid gap-12 md:grid-cols-5">
           {/* Info */}
-          <Stagger className="space-y-8 md:col-span-2">
+          <div className="md:col-span-2">
+            <FadeUp className="mb-8">
+              <div className="relative h-36 overflow-hidden rounded-xl">
+                <img
+                  src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80"
+                  alt="Nagpur business district"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/70 to-transparent" />
+              </div>
+            </FadeUp>
+
+            <Stagger className="space-y-8">
             <StaggerItem>
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-charcoal">
@@ -117,11 +130,12 @@ export default function ContactPage() {
               </div>
             </div>
             </StaggerItem>
-          </Stagger>
+            </Stagger>
+          </div>
 
           {/* Form */}
           <FadeUp delay={0.2} className="md:col-span-3">
-          <Card className="bg-charcoal border-gold/20">
+          <Card className="bg-charcoal border-gold/20 card-glow">
             <CardHeader>
               <CardTitle className="text-2xl">Send a Message</CardTitle>
             </CardHeader>

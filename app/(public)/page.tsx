@@ -61,14 +61,16 @@ const confidencePillars = [
 export default function HomePage() {
   return (
     <>
-      <section className="relative overflow-hidden bg-navy-deep py-28 md:py-32">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              'radial-gradient(ellipse 80% 60% at 50% 0%, #d4af37, transparent)',
-          }}
+      <section className="relative flex min-h-[88vh] items-center justify-center overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1920&q=80"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+          loading="eager"
         />
+        <div className="absolute inset-0 -z-10 bg-navy-deep/70" />
+        <div className="absolute bottom-0 left-0 right-0 -z-10 h-32 bg-gradient-to-t from-navy-deep to-transparent" />
         <div className="relative mx-auto max-w-6xl px-6 text-center">
           <HeroItem delay={0}>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-charcoal px-6 py-2.5 text-lg font-bold text-gold tracking-widest uppercase">
@@ -99,7 +101,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-24 bg-navy">
+      <section className="bg-navy py-24">
         <div className="mx-auto max-w-6xl px-6">
           <FadeUp className="mb-12 text-center">
             <h2 className="text-3xl font-bold sm:text-4xl">About Us</h2>
@@ -118,7 +120,7 @@ export default function HomePage() {
             </p>
           </FadeUp>
 
-          <FadeUp delay={0.1} className="mx-auto max-w-4xl rounded-xl border border-gold/20 bg-charcoal p-8 md:p-10">
+          <FadeUp delay={0.1} className="mx-auto max-w-4xl rounded-xl border border-gold/20 bg-charcoal p-8 md:p-10 bg-dot-grid">
             <h3 className="mb-6 text-4xl font-bold text-center">Why Choose Us</h3>
             <div className="grid gap-5 sm:grid-cols-2 sm:justify-items-center">
               {whyChoose.map((item) => (
@@ -133,7 +135,7 @@ export default function HomePage() {
           <Stagger className="mt-10 grid gap-8 md:grid-cols-3">
             {confidencePillars.map((pillar) => (
               <StaggerItem key={pillar.title}>
-                <Card className="bg-charcoal border-gold/20 h-full">
+                <Card className="bg-charcoal border-gold/20 h-full card-glow">
                   <CardContent className="p-7">
                     <h3 className="text-2xl font-semibold text-gold">{pillar.title}</h3>
                     <p className="mt-3 text-lg text-muted-foreground leading-relaxed">{pillar.text}</p>
@@ -145,12 +147,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-gold/20 bg-charcoal py-12">
+      <section className="border-y border-gold/20 bg-charcoal py-12 bg-dot-grid">
         <div className="mx-auto max-w-6xl px-6">
           <Stagger className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             {stats.map((s) => (
               <StaggerItem key={s.label} className="text-center">
-                <p className="text-3xl font-extrabold terminal-text text-gold">{s.value}</p>
+                <p className="shimmer-text text-3xl font-extrabold terminal-text">{s.value}</p>
                 <p className="mt-1 text-base text-muted-foreground uppercase tracking-wider">{s.label}</p>
               </StaggerItem>
             ))}
@@ -158,7 +160,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-28 bg-navy">
+      <section className="bg-navy py-28">
         <div className="mx-auto max-w-6xl px-6">
           <FadeUp className="mb-14 text-center">
             <h2 className="text-3xl font-bold sm:text-4xl">
@@ -169,22 +171,65 @@ export default function HomePage() {
             </p>
           </FadeUp>
 
-          <Stagger className="grid gap-8 md:grid-cols-2">
-            {howItWorks.map((item) => (
-              <StaggerItem key={item.step}>
-                <Card className="bg-charcoal border-gold/20 h-full">
-                  <CardContent className="p-7">
-                    <h3 className="mb-2 text-2xl font-bold text-gold">{item.step}</h3>
-                    <p className="text-lg text-muted-foreground leading-relaxed">{item.text}</p>
-                  </CardContent>
-                </Card>
-              </StaggerItem>
-            ))}
-          </Stagger>
+          <div className="grid items-start gap-10 lg:grid-cols-2">
+            <Stagger className="grid gap-6">
+              {howItWorks.map((item) => (
+                <StaggerItem key={item.step}>
+                  <Card className="bg-charcoal border-gold/20 h-full card-glow">
+                    <CardContent className="p-7">
+                      <h3 className="mb-2 text-2xl font-bold text-gold">{item.step}</h3>
+                      <p className="text-lg text-muted-foreground leading-relaxed">{item.text}</p>
+                    </CardContent>
+                  </Card>
+                </StaggerItem>
+              ))}
+            </Stagger>
+
+            <FadeUp delay={0.2} className="hidden lg:block">
+              <div className="space-y-6">
+                <div className="relative overflow-hidden rounded-2xl">
+                  <img
+                    src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80"
+                    alt="Professional trading analysis"
+                    className="h-[520px] w-full rounded-2xl object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-navy-deep/60 to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <p className="border-l-2 border-gold pl-3 text-sm italic text-white/80">
+                      "Professional market execution. Transparent reporting. Consistent returns."
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative overflow-hidden rounded-2xl">
+                  <img
+                    src="https://images.unsplash.com/photo-1559526324-593bc073d938?auto=format&fit=crop&w=800&q=80"
+                    alt="Portfolio monitoring"
+                    className="h-[320px] w-full rounded-2xl object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-navy-deep/70 via-navy-deep/20 to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-5">
+                    <p className="text-sm text-white/85 border-l-2 border-gold pl-3 italic">
+                      "Data-driven decisions with disciplined risk management."
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </FadeUp>
+          </div>
         </div>
       </section>
 
-      <section className="py-24 bg-charcoal/50 border-t border-gold/20">
+      <section className="relative overflow-hidden border-t border-gold/20 py-24">
+        <img
+          src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1920&q=80"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 h-full w-full object-cover opacity-5"
+          loading="lazy"
+        />
         <div className="mx-auto max-w-6xl px-6">
           <FadeUp className="mx-auto max-w-4xl text-center">
             <h2 className="text-3xl font-bold sm:text-4xl">Long-Term Investor Commitment</h2>

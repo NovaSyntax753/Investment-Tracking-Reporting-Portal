@@ -14,6 +14,20 @@ export default function Footer() {
       className="border-t border-gold/20 bg-navy-deep py-10"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-8 flex flex-wrap justify-center gap-3 border-t border-gold/10 pt-6">
+          {[
+            { icon: '🔒', label: 'Bank-Grade Security' },
+            { icon: '📊', label: 'Daily Transparency' },
+            { icon: '💼', label: 'Professional Management' },
+            { icon: '✅', label: 'Fixed Monthly Returns' },
+          ].map((b) => (
+            <span key={b.label} className="flex items-center gap-2 rounded-full border border-gold/15 bg-charcoal/60 px-4 py-2 text-sm text-muted-foreground">
+              <span style={{ fontSize: 13 }}>{b.icon}</span>
+              {b.label}
+            </span>
+          ))}
+        </div>
+
         <div className="flex flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
           <Link href="/" className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-gold" />

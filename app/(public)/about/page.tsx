@@ -37,16 +37,28 @@ export default function AboutPage() {
   return (
     <div className="py-24">
       <div className="mx-auto max-w-4xl px-6">
+        <div className="relative mb-12 h-56 w-full overflow-hidden rounded-2xl">
+          <img
+            src="https://images.unsplash.com/photo-1560472355-536de3962603?auto=format&fit=crop&w=1920&q=80"
+            alt="Financial district"
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-navy-deep/40 to-navy-deep" />
+          <div className="absolute inset-0 flex items-end justify-center pb-8">
+            <h1 className="text-center text-4xl font-extrabold text-white drop-shadow-lg">RK Smart Money</h1>
+          </div>
+        </div>
+
         <FadeUp className="mb-16 text-center">
           <p className="mb-3 text-2xl font-semibold uppercase tracking-widest text-gold">About Us</p>
-          <h1 className="text-5xl font-extrabold sm:text-5xl">RK Smart Money</h1>
           <p className="mt-5 text-xl text-muted-foreground leading-relaxed">
             A financial management platform designed for individuals seeking consistent and predictable returns on their investments.
           </p>
         </FadeUp>
 
         <FadeUp delay={0.1} className="mb-10">
-          <Card className="bg-charcoal border-gold/20">
+          <Card className="bg-charcoal border-gold/20 card-glow">
             <CardContent className="p-8 space-y-4">
               <h2 className="text-3xl font-bold">Who We Are</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
@@ -62,9 +74,19 @@ export default function AboutPage() {
           </Card>
         </FadeUp>
 
+        <FadeUp delay={0.15} className="mb-8">
+          <div className="rounded-r-xl border-l-4 border-gold bg-charcoal/60 py-5 pl-6">
+            <p className="text-xl italic text-foreground/85 leading-relaxed">
+              "Our approach is built on discipline, transparency, and long-term thinking -
+              because your financial future deserves nothing less."
+            </p>
+            <p className="mt-3 text-sm text-muted-foreground font-medium">- RK Smart Money Team</p>
+          </div>
+        </FadeUp>
+
         <Stagger className="grid gap-6 sm:grid-cols-2">
           <StaggerItem>
-            <Card className="bg-charcoal border-gold/20 h-full">
+            <Card className="bg-charcoal border-gold/20 h-full card-glow">
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold text-gold">Our Philosophy</h3>
                 <p className="mt-2 text-lg text-muted-foreground">We believe that investing should be simple, transparent, and reliable.</p>
@@ -74,7 +96,7 @@ export default function AboutPage() {
           </StaggerItem>
 
           <StaggerItem>
-            <Card className="bg-charcoal border-gold/20 h-full">
+            <Card className="bg-charcoal border-gold/20 h-full card-glow">
               <CardContent className="p-6">
                 <h3 className="text-2xl font-semibold text-gold">Our Mission</h3>
                 <p className="mt-2 text-lg text-muted-foreground">To provide a secure and reliable investment ecosystem where investors can earn consistent monthly income.</p>
@@ -83,7 +105,7 @@ export default function AboutPage() {
           </StaggerItem>
 
           <StaggerItem>
-            <Card className="bg-charcoal border-gold/20 h-full">
+            <Card className="bg-charcoal border-gold/20 h-full card-glow">
               <CardContent className="p-6">
                 <h3 className="text-2xl font-semibold text-gold">Our Vision</h3>
                 <p className="mt-2 text-lg text-muted-foreground">To become a trusted name in investment management by delivering stable returns and maintaining long-term investor relationships.</p>
@@ -92,7 +114,7 @@ export default function AboutPage() {
           </StaggerItem>
 
           <StaggerItem>
-            <Card className="bg-charcoal border-gold/20 h-full">
+            <Card className="bg-charcoal border-gold/20 h-full card-glow">
               <CardContent className="p-6">
                 <h3 className="text-2xl font-semibold text-gold">Why Trust Us?</h3>
                 <div className="mt-3 space-y-2 text-lg">
@@ -109,7 +131,7 @@ export default function AboutPage() {
         </Stagger>
 
         <FadeUp delay={0.15} className="mt-10">
-          <Card className="bg-charcoal border-gold/20">
+          <Card className="bg-charcoal border-gold/20 card-glow">
             <CardContent className="p-8">
               <h2 className="text-3xl font-bold">What Investors Receive</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -127,7 +149,7 @@ export default function AboutPage() {
         <Stagger className="mt-10 grid gap-6 md:grid-cols-3">
           {operatingPrinciples.map((principle) => (
             <StaggerItem key={principle.title}>
-              <Card className="bg-charcoal border-gold/20 h-full">
+              <Card className="bg-charcoal border-gold/20 h-full card-glow">
                 <CardContent className="p-6">
                   <h3 className="text-2xl font-semibold text-gold">{principle.title}</h3>
                   <p className="mt-3 text-lg text-muted-foreground leading-relaxed">{principle.text}</p>
