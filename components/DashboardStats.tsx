@@ -10,6 +10,7 @@ interface Stat {
 }
 
 interface DashboardStatsProps {
+  investedAmount?: number | null
   releasedAmount: number
   unreleasedAmount: number
   todayEod: number | null
@@ -26,6 +27,7 @@ function fmt(n: number) {
 }
 
 export default function DashboardStats({
+  investedAmount,
   releasedAmount,
   unreleasedAmount,
   todayEod,
@@ -37,8 +39,8 @@ export default function DashboardStats({
 
   const stats: Stat[] = [
     {
-      label: 'Released Amount',
-      value: fmt(releasedAmount),
+      label: investedAmount != null ? 'Invested Amount' : 'Released Amount',
+      value: fmt(investedAmount ?? releasedAmount),
       icon: <DollarSign className="h-5 w-5 text-muted-foreground" />,
       trend: 'neutral',
     },

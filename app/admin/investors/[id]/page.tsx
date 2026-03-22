@@ -19,7 +19,7 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
   const [{ data: investorWithNewCols, error: investorWithNewColsError }, { data: updatesWithStatus, error: updatesWithStatusError }, { data: transactionsData, error: transactionsError }] = await Promise.all([
     supabase
       .from('investors')
-      .select('id, name, investor_code, released_amount, unreleased_amount, prior_released_amount')
+      .select('id, name, investor_code, invested_amount, released_amount, unreleased_amount, prior_released_amount')
       .eq('id', id)
       .maybeSingle(),
     supabase
@@ -38,7 +38,7 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
 
   // Backward-compatible fallback when migration 003 columns are not present yet.
   let investor = investorWithNewCols
-  if (!investor && investorWithNewColsError && /(released_amount|unreleased_amount|prior_released_amount)/i.test(investorWithNewColsError.message)) {
+  if (!investor && investorWithNewColsError && /(invested_amount|released_amount|unreleased_amount|prior_released_amount)/i.test(investorWithNewColsError.message)) {
     const { data: fallbackInvestor } = await supabase
       .from('investors')
       .select('id, name, investor_code')
@@ -48,6 +48,7 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
     investor = fallbackInvestor
       ? {
           ...fallbackInvestor,
+          invested_amount: 0,
           released_amount: 0,
           unreleased_amount: 0,
           prior_released_amount: 0,
@@ -80,7 +81,14 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
 
   const today = updates?.[0] ?? null
   const yesterday = updates?.[1] ?? null
+  const investedAmount = Number(investor.invested_amount ?? 0)
   const releasedAmount = Number(investor.released_amount ?? 0) + Number(investor.prior_released_amount ?? 0)
+
+  const investedAmountLabel = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 2,
+  }).format(investedAmount)
 
   return (
     <div className="space-y-8">
@@ -99,6 +107,10 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
             </span>
           </div>
           <p className="mt-1 font-mono text-sm text-muted-foreground">{investor.investor_code ?? '—'}</p>
+          <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-gold/35 bg-gradient-to-r from-gold/15 via-gold/5 to-transparent px-3 py-2 shadow-[0_0_20px_rgba(212,175,55,0.12)]">
+            <span className="text-[10px] uppercase tracking-[0.16em] text-gold/80">Invested Capital</span>
+            <span className="terminal-text text-sm font-semibold text-gold">{investedAmountLabel}</span>
+          </div>
         </div>
         <Link href="/admin/investors" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-muted-foreground')}>
           <ArrowLeft className="mr-2 h-4 w-4" />Back
@@ -106,6 +118,7 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
       </div>
 
       <DashboardStats
+        investedAmount={investedAmount}
         releasedAmount={releasedAmount}
         unreleasedAmount={Number(investor.unreleased_amount ?? 0)}
         todayEod={today?.eod_amount ?? null}

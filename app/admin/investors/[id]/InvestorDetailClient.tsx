@@ -821,7 +821,7 @@ export default function AdminInvestorDetailClient({
   const updatesWithPnl = useMemo(() => {
     return updates.map((u, i) => {
       const next = updates[i + 1];
-      const pnl = next ? Number(u.eod_amount) - Number(next.eod_amount) : null;
+      const pnl = next ? Number(u.eod_amount) - Number(next.eod_amount) : 0;
       return { ...u, pnl };
     });
   }, [updates]);
@@ -910,13 +910,6 @@ export default function AdminInvestorDetailClient({
                           <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
                           Ongoing
                         </span>
-                      ) : u.pnl == null ? (
-                        <Badge
-                          variant="outline"
-                          className="border-gold/30 bg-gold/10 text-gold"
-                        >
-                          Base Day
-                        </Badge>
                       ) : (
                         <Badge
                           variant="outline"
