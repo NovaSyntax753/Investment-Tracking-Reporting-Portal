@@ -13,10 +13,10 @@ import {
 } from 'lucide-react'
 
 const navLinks = [
-  { href: '/admin', label: 'Overview', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { href: '/admin/investors', label: 'Investors', icon: <Users className="h-4 w-4" /> },
-  { href: '/admin/updates', label: 'Daily Updates', icon: <Activity className="h-4 w-4" /> },
-  { href: '/admin/reports', label: 'Reports', icon: <UploadCloud className="h-4 w-4" /> },
+  { href: '/admin', label: 'Overview', icon: <LayoutDashboard className="h-5 w-5" /> },
+  { href: '/admin/investors', label: 'Investors', icon: <Users className="h-5 w-5" /> },
+  { href: '/admin/updates', label: 'Daily Updates', icon: <Activity className="h-5 w-5" /> },
+  { href: '/admin/reports', label: 'Reports', icon: <UploadCloud className="h-5 w-5" /> },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -28,9 +28,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-navy-deep md:flex-row">
+    <div className="admin-zone flex min-h-screen flex-col bg-navy-deep md:flex-row">
       {/* Mobile top nav + desktop sidebar */}
-      <aside className="w-full shrink-0 border-b border-gold/15 bg-[#0a0f1e] md:w-60 md:border-b-0 md:border-r">
+      <aside className="w-full shrink-0 border-b border-gold/15 bg-gradient-to-b from-[#0a0f1e] via-[#09132a] to-[#050c1f] md:w-64 md:border-b-0 md:border-r">
         <div className="flex items-center justify-between border-b border-gold/15 px-4 py-3 md:px-5 md:py-5">
           <BrandLogo href="/admin" imageClassName="h-9 w-auto" textClassName="text-sm font-bold" />
           <form action={logoutAction} className="md:hidden">
@@ -41,20 +41,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </form>
         </div>
 
-        <div className="hidden border-b border-gold/15 px-5 py-3 md:block">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-0.5 text-xs font-semibold text-gold">
+        <div className="hidden border-b border-gold/15 px-5 py-4 md:block">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/45 bg-gold/10 px-3 py-1 text-sm font-semibold tracking-wide text-gold shadow-[0_0_24px_rgba(212,175,55,0.12)]">
             Admin Console
           </span>
         </div>
 
-        <nav className="flex gap-2 overflow-x-auto px-3 py-3 md:flex-1 md:flex-col md:gap-1 md:p-3">
+        <nav className="flex gap-2 overflow-x-auto px-3 py-3 md:flex-1 md:flex-col md:gap-2 md:p-4">
           {navLinks.map(({ href, label, icon }) => (
             <Link
               key={href}
               href={href}
-              className="flex shrink-0 items-center gap-2 rounded-lg border border-gold/20 bg-navy px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-charcoal hover:text-foreground md:border-transparent md:bg-transparent md:gap-3 md:px-3 md:py-2.5"
+              className="group flex shrink-0 items-center gap-3 rounded-xl border border-gold/20 bg-navy/85 px-4 py-3 text-lg font-medium text-foreground/90 transition-all hover:-translate-y-0.5 hover:border-gold/40 hover:bg-charcoal hover:shadow-[0_10px_26px_rgba(0,0,0,0.35)] md:text-[1.2rem]"
             >
-              {icon}
+              <span className="text-gold/90 transition-transform group-hover:scale-105">{icon}</span>
               <span className="whitespace-nowrap">{label}</span>
             </Link>
           ))}
@@ -65,9 +65,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Button
               type="submit"
               variant="ghost"
-              className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive"
+              className="h-12 w-full justify-start gap-3 rounded-xl text-lg text-muted-foreground hover:bg-charcoal hover:text-destructive"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
               Sign Out
             </Button>
           </form>

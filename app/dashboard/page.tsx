@@ -94,6 +94,11 @@ export default async function DashboardPage() {
   const investedAmount = Number(investor.invested_amount ?? 0)
   const rawReleasedAmount = Number(investor.released_amount ?? 0) + Number(investor.prior_released_amount ?? 0)
   const rawUnreleasedAmount = Number(investor.unreleased_amount ?? 0)
+  const investedAmountLabel = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 2,
+  }).format(investedAmount)
 
   // If new tracking values are still zero but historic invested data exists, derive a temporary UI fallback.
   const fallbackUnreleased = todayUpdate ? Number(todayUpdate.eod_amount) - investedAmount : 0
@@ -116,9 +121,15 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold">Welcome, {investor.name}</h1>
           <p className="text-muted-foreground text-base mt-1">Portfolio overview · Last 30 days</p>
         </div>
-        <div className="hidden items-center gap-2 text-sm sm:flex">
-          <span className="pulse-dot pulse-dot-green" />
-          <span className="text-sm font-medium text-emerald-400">Markets Active</span>
+        <div className="flex flex-col items-end gap-2">
+          <div className="rounded-lg border border-gold/35 bg-gradient-to-r from-gold/15 via-gold/5 to-transparent px-3 py-2 text-right shadow-[0_0_20px_rgba(212,175,55,0.12)]">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-gold/80">Invested Capital</p>
+            <p className="terminal-text text-lg font-semibold text-gold">{investedAmountLabel}</p>
+          </div>
+          <div className="hidden items-center gap-2 text-sm sm:flex">
+            <span className="pulse-dot pulse-dot-green" />
+            <span className="text-sm font-medium text-emerald-400">Markets Active</span>
+          </div>
         </div>
       </div>
 

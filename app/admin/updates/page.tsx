@@ -15,8 +15,8 @@ export default async function AdminUpdatesPage() {
       <div>
         <h1 className="text-2xl font-bold">Daily Update Entry</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Post end-of-day portfolio values. Selecting &ldquo;All Investors&rdquo; creates one record per
-          active investor and triggers multi-channel notifications.
+          Post signed daily P&amp;L updates. Selecting &ldquo;All Investors&rdquo; applies the same signed P&amp;L
+          to each active investor&apos;s latest EOD value and triggers multi-channel notifications.
         </p>
       </div>
 

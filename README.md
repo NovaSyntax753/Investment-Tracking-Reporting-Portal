@@ -39,6 +39,7 @@ Optional notification providers:
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_PHONE_NUMBER`
 - `TWILIO_WHATSAPP_FROM`
+- `TWILIO_WHATSAPP_CONTENT_SID` (optional, for approved WhatsApp template messages)
 
 Optional Premium onboarding links:
 
