@@ -107,9 +107,11 @@ function methodLabel(method: string) {
 
 function EditUpdateDialog({
   row,
+  baseEodAmount,
   onSaved,
 }: {
   row: DailyUpdate;
+  baseEodAmount: number;
   onSaved: (patch: {
     eod_amount: number;
     trade_notes: string | null;
@@ -118,17 +120,39 @@ function EditUpdateDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [eodAmount, setEodAmount] = useState(String(row.eod_amount ?? 0));
+  const initialSignedPnl = Number(row.eod_amount ?? 0) - Number(baseEodAmount);
+  const [pnlDirection, setPnlDirection] = useState<"plus" | "minus">(
+    initialSignedPnl < 0 ? "minus" : "plus",
+  );
+  const [pnlAmountInput, setPnlAmountInput] = useState(
+    String(Math.abs(initialSignedPnl)),
+  );
   const [tradeNotes, setTradeNotes] = useState(row.trade_notes ?? "");
   const [status, setStatus] = useState(
     row.status === "ongoing" ? "ongoing" : "completed",
   );
 
+  const pnlAbs = Number(pnlAmountInput || 0);
+  const signedPnl =
+    (pnlDirection === "minus" ? -1 : 1) *
+    (Number.isFinite(pnlAbs) ? pnlAbs : 0);
+  const projectedEod = Number(baseEodAmount) + signedPnl;
+
   async function handleSave() {
+    if (!Number.isFinite(pnlAbs) || pnlAbs < 0) {
+      toast.error("Enter a valid P&L amount");
+      return;
+    }
+
+    if (!Number.isFinite(projectedEod) || projectedEod < 0) {
+      toast.error("P&L results in a negative balance. Please adjust.");
+      return;
+    }
+
     setLoading(true);
     const fd = new FormData();
     fd.append("id", row.id);
-    fd.append("eod_amount", eodAmount);
+    fd.append("eod_amount", projectedEod.toFixed(2));
     fd.append("trade_notes", tradeNotes);
     fd.append("status", status);
 
@@ -141,7 +165,7 @@ function EditUpdateDialog({
     }
 
     onSaved({
-      eod_amount: Number(eodAmount),
+      eod_amount: projectedEod,
       trade_notes: tradeNotes.trim() ? tradeNotes.trim() : null,
       status,
     });
@@ -159,51 +183,98 @@ function EditUpdateDialog({
       >
         <Pencil className="h-4 w-4" />
       </DialogTrigger>
-      <DialogContent className="bg-charcoal border-gold/20">
+      <DialogContent className="border-gold/20 bg-charcoal/95 shadow-2xl shadow-black/40 backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle>Edit Daily Update</DialogTitle>
           <DialogDescription>
-            Update EOD amount and notes for{" "}
+            Update date status, P&L amount, and optional notes for{" "}
             {format(new Date(row.update_date + "T00:00:00"), "dd MMM yyyy")}.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border border-gold/15 bg-gradient-to-b from-navy/60 to-charcoal/70 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gold/15 bg-navy/60 px-3 py-2 text-xs">
+            <span className="text-muted-foreground">Previous EOD</span>
+            <span className="terminal-text font-semibold text-gold">
+              {fmtCurrency(Number(baseEodAmount))}
+            </span>
+          </div>
+
           <div className="space-y-1.5">
-            <Label htmlFor={`eod-${row.id}`}>EOD Amount (₹)</Label>
+            <Label>Date</Label>
             <Input
-              id={`eod-${row.id}`}
-              type="number"
-              step="0.01"
+              type="date"
               className="bg-navy border-gold/20"
-              value={eodAmount}
-              onChange={(e) => setEodAmount(e.target.value)}
+              value={row.update_date}
+              readOnly
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor={`status-${row.id}`}>Status</Label>
+            <Label>Status</Label>
             <Select
               value={status}
-              onValueChange={(value) => setStatus(value ?? "completed")}
+              onValueChange={(value) => setStatus(value ?? "ongoing")}
             >
-              <SelectTrigger
-                id={`status-${row.id}`}
-                className="bg-navy border-gold/20"
-              >
+              <SelectTrigger className="bg-navy border-gold/20">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent className="bg-charcoal border-gold/20">
-                <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="ongoing">Ongoing</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor={`notes-${row.id}`}>Trade Notes</Label>
+            <Label>P&L Amount (₹)</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className={cn(
+                  "h-10 w-12 border-gold/30 px-0",
+                  pnlDirection === "minus"
+                    ? "bg-red-500/15 text-red-300 border-red-400/50"
+                    : "bg-navy text-muted-foreground",
+                )}
+                onClick={() => setPnlDirection("minus")}
+              >
+                -
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className={cn(
+                  "h-10 w-12 border-gold/30 px-0",
+                  pnlDirection === "plus"
+                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-400/50"
+                    : "bg-navy text-muted-foreground",
+                )}
+                onClick={() => setPnlDirection("plus")}
+              >
+                +
+              </Button>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                className="bg-navy border-gold/20"
+                value={pnlAmountInput}
+                onChange={(e) => setPnlAmountInput(e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Projected EOD:{" "}
+              <span className="terminal-text text-gold">
+                {fmtCurrency(projectedEod)}
+              </span>
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Trade Notes</Label>
             <Textarea
-              id={`notes-${row.id}`}
               rows={4}
               className="bg-navy border-gold/20 resize-none"
               value={tradeNotes}
@@ -864,6 +935,7 @@ export default function AdminInvestorDetailClient({
                       <div className="inline-flex items-center gap-1">
                         <EditUpdateDialog
                           row={u}
+                          baseEodAmount={Number(u.eod_amount) - Number(u.pnl ?? 0)}
                           onSaved={(patch) => {
                             setUpdates((prev) =>
                               prev.map((item) =>
