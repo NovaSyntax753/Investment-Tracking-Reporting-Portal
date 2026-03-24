@@ -85,19 +85,50 @@ export default function PremiumPage() {
     fd.append('message', data.message)
     fd.append('source', 'Premium Page Form')
 
+    // First, save into the Supabase database
     const result = await submitPremiumContactAction(fd)
     if (result?.error) {
       toast.error(result.error)
       return
     }
 
+    // Next, submit to Web3Forms directly from the browser
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY_PREMIUM || process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY
+    if (accessKey) {
+      try {
+        const web3Result = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            name: data.name,
+            email: data.email,
+            message: data.message,
+            subject: 'New Premium Form Submission',
+            from_name: 'RK Smart Money Website',
+          }),
+        })
+
+        const responseData = await web3Result.json()
+        if (!responseData.success) {
+          console.error('Web3Forms response error:', responseData)
+          toast.warning('Message saved, but email forwarding encountered an issue.')
+        } else {
+          toast.success('Message sent! We will get back to you soon.')
+        }
+      } catch (err) {
+        console.error('Web3Forms fetch error:', err)
+        toast.warning('Message saved, but we had trouble forwarding the email.')
+      }
+    } else {
+      toast.success('Message saved to database!')
+    }
+
     setSent(true)
     reset()
-    if ('warning' in result && result.warning) {
-      toast.warning(result.warning)
-    } else {
-      toast.success('Message sent! We will get back to you soon.')
-    }
   }
 
   return (
