@@ -45,7 +45,11 @@ export default function ContactPage() {
     } else {
       setSent(true)
       reset()
-      toast.success('Message sent! We will get back to you soon.')
+      if ('warning' in result && result.warning) {
+        toast.warning(result.warning)
+      } else {
+        toast.success('Message sent! We will get back to you soon.')
+      }
     }
   }
 

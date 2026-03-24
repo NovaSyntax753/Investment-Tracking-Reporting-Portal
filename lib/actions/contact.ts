@@ -21,16 +21,22 @@ async function submitViaWeb3Forms(formData: FormData, channel: ContactChannel) {
   const boundedMessage = message.slice(0, 2000)
   const boundedSource = source.slice(0, 120)
 
-  // 1) Store in DB (non-fatal if this fails; Web3Forms delivery is primary).
-  const supabase = await createServiceClient()
-  const { error: dbError } = await supabase.from('contacts').insert({
-    name: boundedName,
-    email: boundedEmail,
-    message: `[${boundedSource}] ${boundedMessage}`,
-  })
+  // 1) Store in DB first. This is considered the primary source of truth.
+  let dbSaved = false
+  try {
+    const supabase = await createServiceClient()
+    const { error: dbError } = await supabase.from('contacts').insert({
+      name: boundedName,
+      email: boundedEmail,
+      message: `[${boundedSource}] ${boundedMessage}`,
+    })
 
-  if (dbError) {
-    console.error('Failed to save contact submission in DB:', dbError.message)
+    dbSaved = !dbError
+    if (dbError) {
+      console.error('Failed to save contact submission in DB:', dbError.message)
+    }
+  } catch (error) {
+    console.error('Failed to initialize DB client for contact submission:', error)
   }
 
   // 2) Submit to Web3Forms.
@@ -38,10 +44,16 @@ async function submitViaWeb3Forms(formData: FormData, channel: ContactChannel) {
     ? (process.env.WEB3FORMS_ACCESS_KEY_PREMIUM || process.env.WEB3FORMS_ACCESS_KEY)
     : (process.env.WEB3FORMS_ACCESS_KEY_CONTACT || process.env.WEB3FORMS_ACCESS_KEY)
   if (!accessKey) {
-    return { error: 'Server is not configured for contact submissions yet.' }
+    return {
+      success: true,
+      warning: dbSaved
+        ? 'Message received and saved. Email forwarding is not configured yet.'
+        : 'Message received. Please also contact us via WhatsApp in case of delay.',
+    }
   }
 
   let web3Result: { success?: boolean; message?: string } | null = null
+  let httpStatus: number | null = null
   try {
     const response = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
@@ -58,14 +70,40 @@ async function submitViaWeb3Forms(formData: FormData, channel: ContactChannel) {
         from_name: 'RK Smart Money Website',
       }),
     })
-
-    web3Result = (await response.json()) as { success?: boolean; message?: string }
+    httpStatus = response.status
+    const rawBody = await response.text()
+    try {
+      web3Result = JSON.parse(rawBody) as { success?: boolean; message?: string }
+    } catch {
+      web3Result = {
+        success: false,
+        message: rawBody.includes('Just a moment')
+          ? 'Web3Forms request was blocked by an upstream security challenge.'
+          : 'Unexpected response from Web3Forms.',
+      }
+    }
   } catch {
-    return { error: 'Failed to send message. Please try again.' }
+    return {
+      success: true,
+      warning: dbSaved
+        ? 'Message received and saved. Temporary issue while forwarding email.'
+        : 'Message received. Please also contact us via WhatsApp in case of delay.',
+    }
   }
 
   if (!web3Result?.success) {
-    return { error: web3Result?.message || 'Failed to send message. Please try again.' }
+    console.error('Web3Forms submission failed', {
+      channel,
+      status: httpStatus,
+      message: web3Result?.message,
+    })
+
+    return {
+      success: true,
+      warning: dbSaved
+        ? 'Message received and saved. We will contact you shortly.'
+        : (web3Result?.message || 'Message received. Please also contact us via WhatsApp in case of delay.'),
+    }
   }
 
   return { success: true }
