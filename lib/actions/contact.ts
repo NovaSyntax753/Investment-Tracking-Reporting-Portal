@@ -1,50 +1,80 @@
 'use server'
 
 import { createServiceClient } from '@/lib/supabase/server'
-import { Resend } from 'resend'
 
-export async function submitContactAction(formData: FormData) {
-  const name = formData.get('name') as string
-  const email = formData.get('email') as string
-  const message = formData.get('message') as string
+type ContactChannel = 'contact' | 'premium'
+
+async function submitViaWeb3Forms(formData: FormData, channel: ContactChannel) {
+  const name = (formData.get('name') as string | null)?.trim() ?? ''
+  const email = (formData.get('email') as string | null)?.trim() ?? ''
+  const message = (formData.get('message') as string | null)?.trim() ?? ''
+  const source = (formData.get('source') as string | null)?.trim()
+    || (channel === 'premium' ? 'Premium Page Form' : 'Contact Page Form')
 
   if (!name || !email || !message) {
     return { error: 'All fields are required' }
   }
 
-  // Sanitise inputs — prevent injection in email HTML
-  const safeName = name.slice(0, 200).replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  const safeEmail = email.slice(0, 200).replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  const safeMessage = message.slice(0, 2000).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>')
+  // Keep lengths bounded for both DB storage and external form API payload.
+  const boundedName = name.slice(0, 200)
+  const boundedEmail = email.slice(0, 200)
+  const boundedMessage = message.slice(0, 2000)
+  const boundedSource = source.slice(0, 120)
 
-  // 1. Store in DB
+  // 1) Store in DB (non-fatal if this fails; Web3Forms delivery is primary).
   const supabase = await createServiceClient()
-  const { error: dbError } = await supabase.from('contacts').insert({ name, email, message })
-  if (dbError) return { error: 'Failed to save message. Please try again.' }
+  const { error: dbError } = await supabase.from('contacts').insert({
+    name: boundedName,
+    email: boundedEmail,
+    message: `[${boundedSource}] ${boundedMessage}`,
+  })
 
-  // 2. Send email to admin
-  const adminEmail = process.env.ADMIN_EMAIL
-  if (adminEmail) {
-    try {
-      const resend = new Resend(process.env.RESEND_API_KEY)
-      await resend.emails.send({
-        from: `RK Trading Contact Form <noreply@${process.env.RESEND_DOMAIN ?? 'rktrading.in'}>`,
-        to: adminEmail,
-        subject: `New Contact Form Submission — ${safeName}`,
-        html: `
-          <div style="font-family:sans-serif;max-width:560px;margin:auto;background:#111b2e;color:#e8eaf0;padding:32px;border-radius:12px;border:1px solid rgba(212,175,55,0.3)">
-            <h2 style="color:#d4af37;margin-top:0">New Contact Message</h2>
-            <p><strong>Name:</strong> ${safeName}</p>
-            <p><strong>Email:</strong> <a href="mailto:${safeEmail}" style="color:#d4af37">${safeEmail}</a></p>
-            <p><strong>Message:</strong></p>
-            <div style="background:#0d1526;padding:16px;border-radius:8px;border-left:3px solid #d4af37">${safeMessage}</div>
-          </div>
-        `,
-      })
-    } catch {
-      // Non-fatal — message is already in DB
-    }
+  if (dbError) {
+    console.error('Failed to save contact submission in DB:', dbError.message)
+  }
+
+  // 2) Submit to Web3Forms.
+  const accessKey = channel === 'premium'
+    ? (process.env.WEB3FORMS_ACCESS_KEY_PREMIUM || process.env.WEB3FORMS_ACCESS_KEY)
+    : (process.env.WEB3FORMS_ACCESS_KEY_CONTACT || process.env.WEB3FORMS_ACCESS_KEY)
+  if (!accessKey) {
+    return { error: 'Server is not configured for contact submissions yet.' }
+  }
+
+  let web3Result: { success?: boolean; message?: string } | null = null
+  try {
+    const response = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        access_key: accessKey,
+        name: boundedName,
+        email: boundedEmail,
+        message: boundedMessage,
+        subject: `New ${channel === 'premium' ? 'Premium' : 'Contact'} Form Submission (${boundedSource})`,
+        from_name: 'RK Smart Money Website',
+      }),
+    })
+
+    web3Result = (await response.json()) as { success?: boolean; message?: string }
+  } catch {
+    return { error: 'Failed to send message. Please try again.' }
+  }
+
+  if (!web3Result?.success) {
+    return { error: web3Result?.message || 'Failed to send message. Please try again.' }
   }
 
   return { success: true }
+}
+
+export async function submitContactAction(formData: FormData) {
+  return submitViaWeb3Forms(formData, 'contact')
+}
+
+export async function submitPremiumContactAction(formData: FormData) {
+  return submitViaWeb3Forms(formData, 'premium')
 }

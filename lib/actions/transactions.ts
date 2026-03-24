@@ -22,6 +22,10 @@ async function applyInvestorReleaseDelta(
   const nextReleased = Number(investor.released_amount ?? 0) + releasedDelta
   const nextUnreleased = Number(investor.unreleased_amount ?? 0) + unreleasedDelta
 
+  if (nextReleased < 0 || nextUnreleased < 0) {
+    return { error: 'Transaction would make released/unreleased totals invalid.' }
+  }
+
   const { error: updateError } = await supabase
     .from('investors')
     .update({

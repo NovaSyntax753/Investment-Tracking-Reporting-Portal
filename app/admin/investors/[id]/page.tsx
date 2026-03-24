@@ -82,7 +82,8 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
   const today = updates?.[0] ?? null
   const yesterday = updates?.[1] ?? null
   const investedAmount = Number(investor.invested_amount ?? 0)
-  const releasedAmount = Number(investor.released_amount ?? 0) + Number(investor.prior_released_amount ?? 0)
+  const releasedAmount = Number(investor.released_amount ?? 0)
+  const previouslyReleasedAmount = Number(investor.prior_released_amount ?? 0)
 
   const investedAmountLabel = new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -120,6 +121,7 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
       <DashboardStats
         investedAmount={investedAmount}
         releasedAmount={releasedAmount}
+        previouslyReleasedAmount={previouslyReleasedAmount}
         unreleasedAmount={Number(investor.unreleased_amount ?? 0)}
         todayEod={today?.eod_amount ?? null}
         yesterdayEod={yesterday?.eod_amount ?? null}
@@ -128,6 +130,7 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
 
       <AdminInvestorDetailClient
         investorId={investor.id}
+        investedAmount={investedAmount}
         initialUpdates={updates ?? []}
         initialTransactions={transactions ?? []}
       />

@@ -92,7 +92,8 @@ export default async function DashboardPage() {
   const yesterdayUpdate = distinctDateUpdates[1] ?? null
 
   const investedAmount = Number(investor.invested_amount ?? 0)
-  const rawReleasedAmount = Number(investor.released_amount ?? 0) + Number(investor.prior_released_amount ?? 0)
+  const rawReleasedAmount = Number(investor.released_amount ?? 0)
+  const priorReleasedAmount = Number(investor.prior_released_amount ?? 0)
   const rawUnreleasedAmount = Number(investor.unreleased_amount ?? 0)
   const investedAmountLabel = new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -102,7 +103,7 @@ export default async function DashboardPage() {
 
   // If new tracking values are still zero but historic invested data exists, derive a temporary UI fallback.
   const fallbackUnreleased = todayUpdate ? Number(todayUpdate.eod_amount) - investedAmount : 0
-  const useLegacyDisplayFallback = rawReleasedAmount === 0 && rawUnreleasedAmount === 0 && investedAmount > 0
+  const useLegacyDisplayFallback = rawReleasedAmount === 0 && rawUnreleasedAmount === 0 && priorReleasedAmount === 0 && investedAmount > 0
 
   const releasedAmount = useLegacyDisplayFallback ? investedAmount : rawReleasedAmount
   const unreleasedAmount = useLegacyDisplayFallback ? fallbackUnreleased : rawUnreleasedAmount
@@ -135,7 +136,9 @@ export default async function DashboardPage() {
 
       {/* Stats cards */}
       <DashboardStats
+        investedAmount={investedAmount}
         releasedAmount={releasedAmount}
+        previouslyReleasedAmount={priorReleasedAmount}
         unreleasedAmount={unreleasedAmount}
         todayEod={todayUpdate?.eod_amount ?? null}
         yesterdayEod={yesterdayUpdate?.eod_amount ?? null}

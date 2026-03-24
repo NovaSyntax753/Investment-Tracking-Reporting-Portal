@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import { requireAdmin } from '@/lib/actions/guards'
@@ -146,4 +147,41 @@ export async function deleteInvestorAction(formData: FormData) {
   if (error) return { error: error.message }
 
   return { success: true }
+}
+
+export async function addInvestorInvestmentAction(formData: FormData) {
+  const authz = await requireAdmin()
+  if ('error' in authz) return authz
+
+  const investorId = (formData.get('investor_id') as string)?.trim()
+  const amountToAdd = Number(formData.get('amount'))
+
+  if (!investorId || !Number.isFinite(amountToAdd) || amountToAdd <= 0) {
+    return { error: 'Please enter a valid amount to add.' }
+  }
+
+  const supabase = await createServiceClient()
+  const { data: investor, error: fetchError } = await supabase
+    .from('investors')
+    .select('invested_amount')
+    .eq('id', investorId)
+    .maybeSingle()
+
+  if (fetchError) return { error: fetchError.message }
+  if (!investor) return { error: 'Investor not found' }
+
+  const currentInvested = Number(investor.invested_amount ?? 0)
+  const nextInvested = currentInvested + amountToAdd
+
+  const { error: updateError } = await supabase
+    .from('investors')
+    .update({ invested_amount: nextInvested })
+    .eq('id', investorId)
+
+  if (updateError) return { error: updateError.message }
+
+  revalidatePath('/admin/investors')
+  revalidatePath('/admin')
+
+  return { success: true, invested_amount: nextInvested }
 }

@@ -41,6 +41,12 @@ Optional notification providers:
 - `TWILIO_WHATSAPP_FROM`
 - `TWILIO_WHATSAPP_CONTENT_SID` (optional, for approved WhatsApp template messages)
 
+Optional Web3Forms contact delivery:
+
+- `WEB3FORMS_ACCESS_KEY` (shared fallback key)
+- `WEB3FORMS_ACCESS_KEY_CONTACT` (key used by Contact page form)
+- `WEB3FORMS_ACCESS_KEY_PREMIUM` (key used by Premium page form)
+
 Optional Premium onboarding links:
 
 - `NEXT_PUBLIC_PREMIUM_WHATSAPP_URL`

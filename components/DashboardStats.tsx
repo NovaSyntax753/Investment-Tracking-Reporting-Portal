@@ -12,6 +12,7 @@ interface Stat {
 interface DashboardStatsProps {
   investedAmount?: number | null
   releasedAmount: number
+  previouslyReleasedAmount?: number | null
   unreleasedAmount: number
   todayEod: number | null
   yesterdayEod: number | null
@@ -29,6 +30,7 @@ function fmt(n: number) {
 export default function DashboardStats({
   investedAmount,
   releasedAmount,
+  previouslyReleasedAmount,
   unreleasedAmount,
   todayEod,
   yesterdayEod,
@@ -42,6 +44,12 @@ export default function DashboardStats({
       label: investedAmount != null ? 'Invested Amount' : 'Released Amount',
       value: fmt(investedAmount ?? releasedAmount),
       icon: <DollarSign className="h-5 w-5 text-muted-foreground" />,
+      trend: 'neutral',
+    },
+    {
+      label: 'Previously Released Amount',
+      value: fmt(Number(previouslyReleasedAmount ?? 0)),
+      icon: <DollarSign className="h-5 w-5 text-gold" />,
       trend: 'neutral',
     },
     {
@@ -65,6 +73,7 @@ export default function DashboardStats({
 
   const cardStyles = [
     { topBorder: 'border-t-2 border-gold', gradient: 'from-charcoal to-navy', bgIcon: '₹' },
+    { topBorder: 'border-t-2 border-cyan-400', gradient: 'from-charcoal to-navy', bgIcon: '⇄' },
     { topBorder: 'border-t-2 border-amber-400', gradient: 'from-charcoal to-navy', bgIcon: '◈' },
     {
       topBorder: trend === 'up' ? 'border-t-2 border-emerald-500' : 'border-t-2 border-red-500',
@@ -74,51 +83,56 @@ export default function DashboardStats({
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {stats.map((s, i) => (
-        <Card
-          key={s.label}
-          className={`relative overflow-hidden bg-gradient-to-br ${cardStyles[i].gradient} ${cardStyles[i].topBorder} border-gold/20 card-glow`}
-        >
-          <span className="pointer-events-none absolute -right-2 -top-2 select-none text-7xl leading-none opacity-[0.04]">
-            {cardStyles[i].bgIcon}
-          </span>
-          <CardContent className="relative px-5 pt-6">
-            <div className="flex items-start justify-between">
-              <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {s.label}
+    <div>
+      <div className="mb-3 inline-flex items-center rounded-lg border border-gold/35 bg-gradient-to-r from-gold/15 to-transparent px-3 py-1.5 text-xs uppercase tracking-widest text-gold">
+        Investment Summary
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map((s, i) => (
+          <Card
+            key={s.label}
+            className={`relative overflow-hidden bg-gradient-to-br ${cardStyles[i].gradient} ${cardStyles[i].topBorder} border-gold/20 card-glow`}
+          >
+            <span className="pointer-events-none absolute -right-2 -top-2 select-none text-7xl leading-none opacity-[0.04]">
+              {cardStyles[i].bgIcon}
+            </span>
+            <CardContent className="relative px-5 pt-6">
+              <div className="flex items-start justify-between">
+                <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+                  {s.label}
+                </p>
+                {s.icon}
+              </div>
+              <p
+                className={`mt-3 text-3xl font-bold terminal-text font-tabular ${
+                  s.trend === 'up'
+                    ? 'stat-up'
+                    : s.trend === 'down'
+                    ? 'stat-down'
+                    : 'text-foreground'
+                }`}
+              >
+                {s.value}
               </p>
-              {s.icon}
-            </div>
-            <p
-              className={`mt-3 text-3xl font-bold terminal-text font-tabular ${
-                s.trend === 'up'
-                  ? 'stat-up'
-                  : s.trend === 'down'
-                  ? 'stat-down'
-                  : 'text-foreground'
-              }`}
-            >
-              {s.value}
-            </p>
-            {s.subtext && (
-              <p className="mt-1 text-sm text-muted-foreground">{s.subtext}</p>
-            )}
+              {s.subtext && (
+                <p className="mt-1 text-sm text-muted-foreground">{s.subtext}</p>
+              )}
 
-            {i < 2 && (
-              <svg viewBox="0 0 120 20" className="mt-3 h-4 w-full opacity-30">
-                <polyline
-                  points={i === 0 ? '0,16 24,12 48,10 72,7 96,5 120,2' : '0,18 24,15 48,16 72,10 96,8 120,5'}
-                  fill="none"
-                  stroke={i === 0 ? '#d4af37' : '#f59e0b'}
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+              {i < 3 && (
+                <svg viewBox="0 0 120 20" className="mt-3 h-4 w-full opacity-30">
+                  <polyline
+                    points={i === 0 ? '0,16 24,12 48,10 72,7 96,5 120,2' : i === 1 ? '0,10 24,10 48,11 72,10 96,11 120,10' : '0,18 24,15 48,16 72,10 96,8 120,5'}
+                    fill="none"
+                    stroke={i === 0 ? '#d4af37' : i === 1 ? '#22d3ee' : '#f59e0b'}
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }

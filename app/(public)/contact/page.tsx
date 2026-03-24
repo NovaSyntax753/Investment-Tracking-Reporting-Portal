@@ -38,6 +38,7 @@ export default function ContactPage() {
     fd.append('name', data.name)
     fd.append('email', data.email)
     fd.append('message', data.message)
+    fd.append('source', 'Contact Page Form')
     const result = await submitContactAction(fd)
     if (result?.error) {
       toast.error(result.error)

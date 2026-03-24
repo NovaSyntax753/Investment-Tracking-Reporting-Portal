@@ -15,6 +15,7 @@ import {
   deleteMonthlyTransactionAction,
   markMonthlyTransactionPaidAction,
 } from "@/lib/actions/transactions";
+import { addInvestorInvestmentAction } from "@/lib/actions/investors";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -388,7 +389,6 @@ function AddUpdateDialog({
   );
   const [pnlDirection, setPnlDirection] = useState<"plus" | "minus">("plus");
   const [pnlAmountInput, setPnlAmountInput] = useState("0");
-  const [status, setStatus] = useState("ongoing");
   const [tradeNotes, setTradeNotes] = useState("");
 
   const pnlAbs = Number(pnlAmountInput || 0);
@@ -413,7 +413,7 @@ function AddUpdateDialog({
     fd.append("investor_id", investorId);
     fd.append("update_date", updateDate);
     fd.append("eod_amount", projectedEod.toFixed(2));
-    fd.append("status", status);
+    fd.append("status", "completed");
     fd.append("trade_notes", tradeNotes);
 
     const res = await createOngoingEntryAction(fd);
@@ -434,7 +434,7 @@ function AddUpdateDialog({
       trade_notes: tradeNotes.trim() ? tradeNotes.trim() : null,
       update_date: updateDate,
       created_at: String(createdAt),
-      status,
+      status: "completed",
     });
 
     toast.success("Daily entry added");
@@ -460,13 +460,6 @@ function AddUpdateDialog({
         </DialogHeader>
 
         <div className="space-y-4 rounded-xl border border-gold/15 bg-gradient-to-b from-navy/60 to-charcoal/70 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gold/15 bg-navy/60 px-3 py-2 text-xs">
-            <span className="text-muted-foreground">Previous EOD</span>
-            <span className="terminal-text font-semibold text-gold">
-              {fmtCurrency(Number(latestEodAmount))}
-            </span>
-          </div>
-
           <div className="space-y-1.5">
             <Label>Date</Label>
             <Input
@@ -479,18 +472,7 @@ function AddUpdateDialog({
 
           <div className="space-y-1.5">
             <Label>Status</Label>
-            <Select
-              value={status}
-              onValueChange={(value) => setStatus(value ?? "ongoing")}
-            >
-              <SelectTrigger className="bg-navy border-gold/20">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent className="bg-charcoal border-gold/20">
-                <SelectItem value="ongoing">Ongoing</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
+            <Input className="bg-navy border-gold/20" value="Completed" readOnly />
           </div>
 
           <div className="space-y-1.5">
@@ -559,6 +541,93 @@ function AddUpdateDialog({
           <Button
             className="bg-gold text-navy-deep hover:bg-gold-light"
             onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AddInvestmentDialog({
+  investorId,
+  onSaved,
+}: {
+  investorId: string;
+  onSaved: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [amount, setAmount] = useState("");
+
+  async function handleSubmit() {
+    setLoading(true);
+    const fd = new FormData();
+    fd.append("investor_id", investorId);
+    fd.append("amount", amount);
+
+    const res = await addInvestorInvestmentAction(fd);
+    setLoading(false);
+
+    if (res?.error) {
+      toast.error(res.error);
+      return;
+    }
+
+    toast.success("Investment amount updated");
+    setAmount("");
+    setOpen(false);
+    onSaved();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        className={cn(
+          buttonVariants({ variant: "outline" }),
+          "border-gold/30 text-gold hover:bg-gold/10",
+        )}
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        Add Investment
+      </DialogTrigger>
+      <DialogContent className="border-gold/20 bg-charcoal/95">
+        <DialogHeader>
+          <DialogTitle>Add Investment Capital</DialogTitle>
+          <DialogDescription>
+            This amount will be added cumulatively to the investor&apos;s current
+            invested capital.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-2">
+          <Label htmlFor="investment_amount">Amount to Add (₹)</Label>
+          <Input
+            id="investment_amount"
+            type="number"
+            step="0.01"
+            min="0.01"
+            className="bg-navy border-gold/20"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="200000"
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            className="border-gold/30"
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="bg-gold text-navy-deep hover:bg-gold-light"
+            onClick={handleSubmit}
             disabled={loading}
           >
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -802,10 +871,12 @@ function DeleteTransactionDialog({
 
 export default function AdminInvestorDetailClient({
   investorId,
+  investedAmount,
   initialUpdates,
   initialTransactions,
 }: {
   investorId: string;
+  investedAmount: number;
   initialUpdates: DailyUpdate[];
   initialTransactions: MonthlyTransaction[];
 }) {
@@ -849,15 +920,16 @@ export default function AdminInvestorDetailClient({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="mb-4 text-lg font-semibold">Recent Daily Updates</h2>
-        {updates.length === 0 ? (
-          <div className="rounded-xl border border-gold/20 bg-charcoal p-10 text-center">
-            <p className="text-muted-foreground text-base">
-              No updates in the last 30 days.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-4 flex justify-end">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">Recent Daily Updates</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="rounded-lg border border-gold/25 bg-gold/10 px-3 py-2 text-xs text-gold/90">
+              Total Invested: <span className="terminal-text font-semibold">{fmtCurrency(investedAmount)}</span>
+            </div>
+            <AddInvestmentDialog
+              investorId={investorId}
+              onSaved={() => router.refresh()}
+            />
             <AddUpdateDialog
               investorId={investorId}
               latestEodAmount={Number(updates[0]?.eod_amount ?? 0)}
@@ -866,6 +938,14 @@ export default function AdminInvestorDetailClient({
                 router.refresh();
               }}
             />
+          </div>
+        </div>
+
+        {updates.length === 0 && (
+          <div className="rounded-xl border border-gold/20 bg-charcoal p-10 text-center">
+            <p className="text-muted-foreground text-base">
+              No updates in the last 30 days.
+            </p>
           </div>
         )}
 
