@@ -449,7 +449,8 @@ function AddUpdateDialog({
           "bg-gold text-navy-deep hover:bg-gold-light",
         )}
       >
-        <Plus className="mr-2 h-4 w-4" />New Entry
+        <Plus className="mr-2 h-4 w-4" />
+        New Entry
       </DialogTrigger>
       <DialogContent className="border-gold/20 bg-charcoal/95 shadow-2xl shadow-black/40 backdrop-blur-sm">
         <DialogHeader>
@@ -472,7 +473,11 @@ function AddUpdateDialog({
 
           <div className="space-y-1.5">
             <Label>Status</Label>
-            <Input className="bg-navy border-gold/20" value="Completed" readOnly />
+            <Input
+              className="bg-navy border-gold/20"
+              value="Completed"
+              readOnly
+            />
           </div>
 
           <div className="space-y-1.5">
@@ -514,7 +519,10 @@ function AddUpdateDialog({
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Projected EOD: <span className="terminal-text text-gold">{fmtCurrency(projectedEod)}</span>
+              Projected EOD:{" "}
+              <span className="terminal-text text-gold">
+                {fmtCurrency(projectedEod)}
+              </span>
             </p>
           </div>
 
@@ -598,8 +606,8 @@ function AddInvestmentDialog({
         <DialogHeader>
           <DialogTitle>Add Investment Capital</DialogTitle>
           <DialogDescription>
-            This amount will be added cumulatively to the investor&apos;s current
-            invested capital.
+            This amount will be added cumulatively to the investor&apos;s
+            current invested capital.
           </DialogDescription>
         </DialogHeader>
 
@@ -892,10 +900,11 @@ export default function AdminInvestorDetailClient({
   const updatesWithPnl = useMemo(() => {
     return updates.map((u, i) => {
       const next = updates[i + 1];
-      const pnl = next ? Number(u.eod_amount) - Number(next.eod_amount) : 0;
+      const prevEod = next ? Number(next.eod_amount) : investedAmount;
+      const pnl = Number(u.eod_amount) - prevEod;
       return { ...u, pnl };
     });
-  }, [updates]);
+  }, [updates, investedAmount]);
 
   async function handleMarkTransactionCompleted(id: string) {
     setMarkingTransactionId(id);
@@ -924,7 +933,10 @@ export default function AdminInvestorDetailClient({
           <h2 className="text-lg font-semibold">Recent Daily Updates</h2>
           <div className="flex flex-wrap items-center gap-2">
             <div className="rounded-lg border border-gold/25 bg-gold/10 px-3 py-2 text-xs text-gold/90">
-              Total Invested: <span className="terminal-text font-semibold">{fmtCurrency(investedAmount)}</span>
+              Total Invested:{" "}
+              <span className="terminal-text font-semibold">
+                {fmtCurrency(investedAmount)}
+              </span>
             </div>
             <AddInvestmentDialog
               investorId={investorId}
@@ -932,7 +944,7 @@ export default function AdminInvestorDetailClient({
             />
             <AddUpdateDialog
               investorId={investorId}
-              latestEodAmount={Number(updates[0]?.eod_amount ?? 0)}
+              latestEodAmount={updates.length > 0 ? Number(updates[0].eod_amount) : investedAmount}
               onAdded={(row) => {
                 setUpdates((prev) => sortUpdatesDesc([row, ...prev]));
                 router.refresh();
@@ -960,7 +972,7 @@ export default function AdminInvestorDetailClient({
                   Trade Notes
                 </TableHead>
                 <TableHead className="text-muted-foreground text-sm uppercase tracking-widest text-right">
-                  Unreleased PNL
+                  Today's P&L
                 </TableHead>
                 <TableHead className="text-muted-foreground text-sm uppercase tracking-widest text-right">
                   Actions
@@ -1008,7 +1020,9 @@ export default function AdminInvestorDetailClient({
                       <div className="inline-flex items-center gap-1">
                         <EditUpdateDialog
                           row={u}
-                          baseEodAmount={Number(u.eod_amount) - Number(u.pnl ?? 0)}
+                          baseEodAmount={
+                            Number(u.eod_amount) - Number(u.pnl ?? 0)
+                          }
                           onSaved={(patch) => {
                             setUpdates((prev) =>
                               prev.map((item) =>

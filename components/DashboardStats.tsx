@@ -36,7 +36,20 @@ export default function DashboardStats({
   yesterdayEod,
   todayDate,
 }: DashboardStatsProps) {
-  const todayPnl = todayEod != null && yesterdayEod != null ? todayEod - yesterdayEod : null
+  const todayPnl =
+    todayEod != null && yesterdayEod != null
+      ? todayEod - yesterdayEod
+      : todayEod != null && investedAmount != null
+        ? todayEod - investedAmount
+        : null
+
+  // Frontend fallback: if unreleased is still zero but released history exists,
+  // derive a visible value from invested minus released so the card is informative.
+  const displayUnreleasedAmount =
+    unreleasedAmount === 0 && investedAmount != null && Number(previouslyReleasedAmount ?? 0) > 0
+      ? Math.max(investedAmount - Number(previouslyReleasedAmount ?? 0), 0)
+      : unreleasedAmount
+
   const trend: 'up' | 'down' | 'neutral' = todayPnl == null ? 'neutral' : todayPnl >= 0 ? 'up' : 'down'
 
   const stats: Stat[] = [
@@ -47,14 +60,14 @@ export default function DashboardStats({
       trend: 'neutral',
     },
     {
-      label: 'Previously Released Amount',
+      label: 'Released Amount',
       value: fmt(Number(previouslyReleasedAmount ?? 0)),
       icon: <DollarSign className="h-5 w-5 text-gold" />,
       trend: 'neutral',
     },
     {
-      label: 'Unreleased This Month',
-      value: fmt(unreleasedAmount),
+      label: 'Unreleased amount',
+      value: fmt(displayUnreleasedAmount),
       icon: <TrendingUp className="h-5 w-5 text-gold" />,
       trend: 'up',
     },
@@ -104,7 +117,7 @@ export default function DashboardStats({
                 {s.icon}
               </div>
               <p
-                className={`mt-3 text-3xl font-bold terminal-text font-tabular ${
+                className={`mt-3 text-[clamp(1.65rem,2.4vw,2.6rem)] leading-tight font-bold terminal-text font-tabular tracking-tight break-all ${
                   s.trend === 'up'
                     ? 'stat-up'
                     : s.trend === 'down'

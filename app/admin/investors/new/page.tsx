@@ -122,7 +122,7 @@ export default function NewInvestorPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="prior_released_amount">Previously Released Amount (₹)</Label>
+              <Label htmlFor="prior_released_amount">Released Amount (₹)</Label>
               <Input
                 id="prior_released_amount"
                 type="number"

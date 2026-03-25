@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { createServiceClient } from '@/lib/supabase/server'
 import DashboardStats from '@/components/DashboardStats'
 import AdminInvestorDetailClient from './InvestorDetailClient'
+import ExportReportButton from '@/components/ExportReportButton'
 import { buttonVariants } from '@/lib/buttonVariants'
 import { cn } from '@/lib/utils'
 
@@ -113,9 +114,12 @@ export default async function AdminInvestorDetailPage({ params }: InvestorDetail
             <span className="terminal-text text-sm font-semibold text-gold">{investedAmountLabel}</span>
           </div>
         </div>
-        <Link href="/admin/investors" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-muted-foreground')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />Back
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <ExportReportButton investorId={investor.id} investorName={investor.name} />
+          <Link href="/admin/investors" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-muted-foreground')}>
+            <ArrowLeft className="mr-2 h-4 w-4" />Back
+          </Link>
+        </div>
       </div>
 
       <DashboardStats

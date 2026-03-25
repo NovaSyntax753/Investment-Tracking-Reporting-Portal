@@ -53,9 +53,14 @@ export default function Footer() {
             <Link href="/login" className="hover:text-gold transition-colors">Login</Link>
           </nav>
 
-          <p className="text-center text-sm text-muted-foreground md:text-right">
-            © {new Date().getFullYear()} RK Trading. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center gap-1 md:items-end">
+            <p className="text-center text-sm text-muted-foreground md:text-right">
+              © {new Date().getFullYear()} RK Trading. All rights reserved.
+            </p>
+            <p className="text-xs text-muted-foreground/60 italic">
+              made with ❤️ by kkaptureflowmedia
+            </p>
+          </div>
         </div>
       </div>
     </motion.footer>

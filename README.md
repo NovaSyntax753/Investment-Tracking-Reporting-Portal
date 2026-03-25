@@ -5,9 +5,9 @@ Admin-managed investor portal built with Next.js + Supabase.
 ## Implemented Business Flow
 
 1. Admin creates investor accounts in backend with:
-	- Investor ID (`investor_code`)
-	- Password
-	- Investment profile fields
+   - Investor ID (`investor_code`)
+   - Password
+   - Investment profile fields
 2. Admin posts daily updates.
 3. Investors receive notifications for daily updates (email + SMS + WhatsApp when configured).
 4. At the start of a new month, the system auto-generates each investor's previous-month report from daily updates.

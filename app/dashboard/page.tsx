@@ -159,13 +159,13 @@ export default async function DashboardPage() {
                 <TableRow className="border-gold/20 bg-charcoal hover:bg-charcoal">
                   <TableHead className="text-muted-foreground text-sm uppercase tracking-widest">Date</TableHead>
                   <TableHead className="text-muted-foreground text-sm uppercase tracking-widest">Trade Notes</TableHead>
-                  <TableHead className="text-muted-foreground text-sm uppercase tracking-widest text-right">Unreleased PNL</TableHead>
+                  <TableHead className="text-muted-foreground text-sm uppercase tracking-widest text-right">Today's P&L</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {safeUpdates.map((u, i) => {
                   const next = safeUpdates[i + 1]
-                  const pnl = next ? Number(u.eod_amount) - Number(next.eod_amount) : null
+                  const pnl = next ? Number(u.eod_amount) - Number(next.eod_amount) : Number(u.eod_amount) - investedAmount
                   const isUp = pnl != null && pnl >= 0
                   return (
                     <TableRow
