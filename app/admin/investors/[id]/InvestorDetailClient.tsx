@@ -387,6 +387,9 @@ function AddUpdateDialog({
   const [updateDate, setUpdateDate] = useState(
     format(new Date(), "yyyy-MM-dd"),
   );
+  const [status, setStatus] = useState<"ongoing" | "completed">(
+    "completed",
+  );
   const [pnlDirection, setPnlDirection] = useState<"plus" | "minus">("plus");
   const [pnlAmountInput, setPnlAmountInput] = useState("0");
   const [tradeNotes, setTradeNotes] = useState("");
@@ -413,7 +416,7 @@ function AddUpdateDialog({
     fd.append("investor_id", investorId);
     fd.append("update_date", updateDate);
     fd.append("eod_amount", projectedEod.toFixed(2));
-    fd.append("status", "completed");
+    fd.append("status", status);
     fd.append("trade_notes", tradeNotes);
 
     const res = await createOngoingEntryAction(fd);
@@ -434,7 +437,7 @@ function AddUpdateDialog({
       trade_notes: tradeNotes.trim() ? tradeNotes.trim() : null,
       update_date: updateDate,
       created_at: String(createdAt),
-      status: "completed",
+      status,
     });
 
     toast.success("Daily entry added");
@@ -473,11 +476,18 @@ function AddUpdateDialog({
 
           <div className="space-y-1.5">
             <Label>Status</Label>
-            <Input
-              className="bg-navy border-gold/20"
-              value="Completed"
-              readOnly
-            />
+            <Select
+              value={status}
+              onValueChange={(value) => setStatus((value as "ongoing" | "completed") ?? "completed")}
+            >
+              <SelectTrigger className="bg-navy border-gold/20">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent className="bg-charcoal border-gold/20">
+                <SelectItem value="ongoing">Ongoing</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5">

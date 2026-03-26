@@ -245,3 +245,15 @@
   font-size: 1rem;
   line-height: 1.6;
 }
+
+/* Keep input fields dark even when browser autofill is applied. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #0d1526 inset !important;
+  -webkit-text-fill-color: #e8eaf0 !important;
+  caret-color: #e8eaf0;
+  transition: background-color 9999s ease-in-out 0s;
+}

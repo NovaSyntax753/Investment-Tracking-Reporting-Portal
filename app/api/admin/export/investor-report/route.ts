@@ -32,11 +32,22 @@ export async function GET(request: Request) {
     // We should probably check the request's session, but let's just make the SQL queries first.
 
     // 1. Fetch Investor
-    const { data: investor, error: invError } = await supabase
+    let investorQuery = await supabase
       .from('investors')
-      .select('id, name, investor_code, email, phone, invested_amount, fixed_return_value, fixed_return_percentage, created_at')
+      .select('id, name, investor_code, email, phone, invested_amount, fixed_return_value, fixed_return_percentage, prior_released_amount, created_at')
       .eq('id', investorId)
       .single()
+
+    // Backward compatible fallback when prior_released_amount migration is not present.
+    if (investorQuery.error && /prior_released_amount/i.test(investorQuery.error.message)) {
+      investorQuery = await supabase
+        .from('investors')
+        .select('id, name, investor_code, email, phone, invested_amount, fixed_return_value, fixed_return_percentage, created_at')
+        .eq('id', investorId)
+        .single()
+    }
+
+    const { data: investor, error: invError } = investorQuery
 
     if (invError || !investor) {
       return NextResponse.json({ error: 'Investor not found' }, { status: 404 })
@@ -67,6 +78,16 @@ export async function GET(request: Request) {
 
     if (updError) throw updError
 
+    const { data: paidTransactions, error: paidTransactionsError } = await supabase
+      .from('monthly_transactions')
+      .select('amount')
+      .eq('investor_id', investorId)
+      .eq('status', 'paid')
+
+    if (paidTransactionsError && !/monthly_transactions/i.test(paidTransactionsError.message)) {
+      throw paidTransactionsError
+    }
+
     const validUpdates = updates?.filter(u => u.status !== 'ongoing') || []
     
     // Compute summary stats
@@ -83,6 +104,20 @@ export async function GET(request: Request) {
       
     const monthPnl = closing - opening
     const pnlPct = opening > 0 ? (monthPnl / opening) * 100 : 0
+
+    // Financial calculations for export summary.
+    const investedAmount = Number(investor.invested_amount ?? 0)
+    const priorReleasedAmount = Number((investor as any).prior_released_amount ?? 0)
+    const paidReleasedAmount = (paidTransactions ?? []).reduce(
+      (sum, row) => sum + Number(row.amount ?? 0),
+      0,
+    )
+    const withdrawnAmount = priorReleasedAmount + paidReleasedAmount
+    const activeCapital = investedAmount - withdrawnAmount
+    const monthProfit = monthPnl
+    const totalProfit = closing + withdrawnAmount - investedAmount
+    const unrealizedProfit = closing - activeCapital
+    const capitalRecoveryStatus = withdrawnAmount >= investedAmount ? 'Capital Recovered' : 'At Risk'
 
     // Colors
     const colors = {
@@ -147,6 +182,8 @@ export async function GET(request: Request) {
       r.font = { color: { argb: colors.white } }
       r.getCell(1).font = { color: { argb: colors.muted } }
       r.getCell(3).font = { color: { argb: colors.muted } }
+      r.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' }
+      r.getCell(4).alignment = { horizontal: 'left', vertical: 'middle' }
       if (isCurrency) {
         r.getCell(2).numFmt = '₹#,##0.00'
         r.getCell(4).numFmt = '₹#,##0.00'
@@ -163,7 +200,7 @@ export async function GET(request: Request) {
 
     // Section 2: Investment Profile
     addSectionHeader('Investment Profile')
-    const invProfileRow = addDataRow('Invested Capital:', Number(investor.invested_amount || 0), 'Fixed Monthly Return:', Number(investor.fixed_return_value || 0))
+    const invProfileRow = addDataRow('Invested Capital:', investedAmount, 'Fixed Monthly Return:', Number(investor.fixed_return_value || 0))
     invProfileRow.getCell(2).numFmt = '₹#,##0.00'
     invProfileRow.getCell(2).font = { color: { argb: colors.gold }, bold: true }
     invProfileRow.getCell(4).numFmt = '₹#,##0.00'
@@ -181,13 +218,70 @@ export async function GET(request: Request) {
     const perf3 = addDataRow('Average Balance:', average, 'Trading Days:', tradingDays, false, true)
     perf3.getCell(4).numFmt = '0'
 
-    const mPnLText = monthPnl > 0 ? `+₹${monthPnl.toFixed(2)}` : `-₹${Math.abs(monthPnl).toFixed(2)}`
     const pnlPctText = pnlPct > 0 ? `+${pnlPct.toFixed(2)}%` : `${pnlPct.toFixed(2)}%`
     
     const pnlRow = addDataRow('Month P&L (₹):', monthPnl, 'Month P&L (%):', pnlPctText)
     pnlRow.getCell(2).numFmt = '+₹#,##0.00;-₹#,##0.00'
     pnlRow.getCell(2).font = { color: { argb: monthPnl >= 0 ? colors.green : colors.red }, bold: true }
     pnlRow.getCell(4).font = { color: { argb: pnlPct >= 0 ? colors.green : colors.red }, bold: true }
+
+    s1.addRow([])
+
+    // Section 4: Core Financial Output
+    addSectionHeader('Core Financial Output')
+
+    const rowInvested = addDataRow('Invested Amount (₹):', investedAmount, '', '')
+    rowInvested.getCell(2).numFmt = '₹#,##0.00'
+
+    const rowWithdrawn = addDataRow('Withdrawn Amount (₹):', withdrawnAmount, '', '')
+    rowWithdrawn.getCell(2).numFmt = '₹#,##0.00'
+
+    const rowActiveCapital = addDataRow('Active Capital (₹):', activeCapital, '', '')
+    rowActiveCapital.getCell(2).value = {
+      formula: `B${rowInvested.number}-B${rowWithdrawn.number}`,
+      result: activeCapital,
+    }
+    rowActiveCapital.getCell(2).numFmt = '+₹#,##0.00;-₹#,##0.00'
+    rowActiveCapital.getCell(2).font = { color: { argb: activeCapital >= 0 ? colors.green : colors.red }, bold: true }
+
+    const rowCurrentValue = addDataRow('Current Value (Closing Balance) (₹):', closing, '', '')
+    rowCurrentValue.getCell(2).numFmt = '₹#,##0.00'
+    rowCurrentValue.getCell(2).font = { color: { argb: colors.gold }, bold: true }
+
+    const rowMonthProfit = addDataRow('Monthly Profit (₹):', monthProfit, '', '')
+    rowMonthProfit.getCell(2).value = {
+      formula: `B${rowCurrentValue.number}-B${perf1.number}`,
+      result: monthProfit,
+    }
+    rowMonthProfit.getCell(2).numFmt = '+₹#,##0.00;-₹#,##0.00'
+    rowMonthProfit.getCell(2).font = { color: { argb: monthProfit >= 0 ? colors.green : colors.red }, bold: true }
+
+    const rowTotalProfit = addDataRow('Total Profit (₹):', totalProfit, '', '')
+    rowTotalProfit.getCell(2).value = {
+      formula: `B${rowCurrentValue.number}+B${rowWithdrawn.number}-B${rowInvested.number}`,
+      result: totalProfit,
+    }
+    rowTotalProfit.getCell(2).numFmt = '+₹#,##0.00;-₹#,##0.00'
+    rowTotalProfit.getCell(2).font = { color: { argb: totalProfit >= 0 ? colors.green : colors.red }, bold: true }
+
+    const rowUnrealizedProfit = addDataRow('Unrealized Profit (₹):', unrealizedProfit, '', '')
+    rowUnrealizedProfit.getCell(2).value = {
+      formula: `B${rowCurrentValue.number}-B${rowActiveCapital.number}`,
+      result: unrealizedProfit,
+    }
+    rowUnrealizedProfit.getCell(2).numFmt = '+₹#,##0.00;-₹#,##0.00'
+    rowUnrealizedProfit.getCell(2).font = { color: { argb: unrealizedProfit >= 0 ? colors.green : colors.red }, bold: true }
+
+    const rowStatus = addDataRow('Status:', capitalRecoveryStatus, '', '')
+    rowStatus.getCell(2).value = {
+      formula: `IF(B${rowWithdrawn.number}>=B${rowInvested.number},"Capital Recovered","At Risk")`,
+      result: capitalRecoveryStatus,
+    }
+    rowStatus.getCell(2).alignment = { horizontal: 'right', vertical: 'middle' }
+    rowStatus.getCell(2).font = {
+      color: { argb: capitalRecoveryStatus === 'Capital Recovered' ? colors.green : colors.red },
+      bold: true,
+    }
 
     s1.addRow([])
     
@@ -269,6 +363,7 @@ export async function GET(request: Request) {
           r.getCell(3).font = { color: { argb: dailyPnl >= 0 ? colors.green : colors.red } }
           r.getCell(4).font = { color: { argb: colors.green } }
         }
+        r.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' }
         
         r.getCell(5).font = { color: { argb: u.trade_notes ? colors.white : colors.muted }, italic: !u.trade_notes }
         r.getCell(5).alignment = { wrapText: true }
