@@ -61,9 +61,7 @@ export default function ContactPage() {
     }
 
     // Next, submit to Web3Forms directly from the browser
-    const accessKey =
-      process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY_CONTACT ||
-      process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+    const accessKey = "ba78031a-b430-428c-aed9-8fb112bc4907";
     if (accessKey) {
       try {
         const web3Result = await fetch("https://api.web3forms.com/submit", {
