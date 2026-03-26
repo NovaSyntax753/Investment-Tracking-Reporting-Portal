@@ -26,6 +26,7 @@ const schema = z.object({
   phone: z.string().optional(),
   invested_amount: z.coerce.number().positive('Must be positive'),
   prior_released_amount: z.coerce.number().min(0).optional().default(0),
+  account_created_on: z.string().min(1, 'Select account created date'),
   fixed_return_value: z.coerce.number().min(0, 'Must be 0 or more'),
   fixed_return_percentage: z.coerce.number().min(0).max(100, 'Must be between 0 and 100'),
 })
@@ -34,12 +35,18 @@ type FormData = z.infer<typeof schema>
 
 export default function NewInvestorPage() {
   const router = useRouter()
+  const defaultCreatedDate = new Date().toISOString().slice(0, 10)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({ resolver: zodResolver(schema) })
+  } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      account_created_on: defaultCreatedDate,
+    },
+  })
 
   async function onSubmit(data: FormData) {
     const fd = new FormData()
@@ -101,6 +108,26 @@ export default function NewInvestorPage() {
             <div className="space-y-1.5">
               <Label htmlFor="phone">Phone / WhatsApp</Label>
               <Input id="phone" placeholder="+91 98XXX XXXXX" className="bg-navy border-gold/20 focus:border-gold" {...register('phone')} />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="account_created_on">Account Created On</Label>
+              <Input
+                id="account_created_on"
+                type="date"
+                className="bg-navy border-gold/20 focus:border-gold"
+                onClick={(e) => {
+                  const input = e.currentTarget as HTMLInputElement & {
+                    showPicker?: () => void
+                  }
+                  input.showPicker?.()
+                }}
+                {...register('account_created_on')}
+              />
+              <p className="text-xs text-muted-foreground">
+                You can update this date before creating the account.
+              </p>
+              {errors.account_created_on && <p className="text-xs text-destructive">{errors.account_created_on.message}</p>}
             </div>
 
             <div className="grid gap-5 sm:grid-cols-3">

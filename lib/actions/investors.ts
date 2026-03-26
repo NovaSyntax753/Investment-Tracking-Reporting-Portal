@@ -24,6 +24,10 @@ export async function createInvestorAction(formData: FormData) {
   const phone = normalizePhone(formData.get('phone') as string)
   const invested_amount = parseFloat(formData.get('invested_amount') as string)
   const prior_released_amount = parseFloat((formData.get('prior_released_amount') as string) || '0')
+  const accountCreatedOnRaw = (formData.get('account_created_on') as string | null)?.trim() || ''
+  const accountCreatedOn = /^\d{4}-\d{2}-\d{2}$/.test(accountCreatedOnRaw)
+    ? `${accountCreatedOnRaw}T00:00:00.000Z`
+    : new Date().toISOString()
   const fixed_return_value = parseFloat(formData.get('fixed_return_value') as string)
   const fixed_return_percentage = parseFloat(formData.get('fixed_return_percentage') as string)
 
@@ -86,6 +90,7 @@ export async function createInvestorAction(formData: FormData) {
     email,
     investor_code: investorCode,
     phone,
+    created_at: accountCreatedOn,
     invested_amount,
     prior_released_amount: Number.isFinite(prior_released_amount) ? prior_released_amount : 0,
     fixed_return_value,
