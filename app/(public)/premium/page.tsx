@@ -111,9 +111,7 @@ export default function PremiumPage() {
     }
 
     // Next, submit to Web3Forms directly from the browser
-    const accessKey =
-      process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY_PREMIUM ||
-      process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+    const accessKey = "52d66e02-417a-4d91-9a33-36042ba4747f";
     if (accessKey) {
       try {
         const web3Result = await fetch("https://api.web3forms.com/submit", {
