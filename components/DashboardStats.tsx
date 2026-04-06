@@ -43,12 +43,7 @@ export default function DashboardStats({
         ? todayEod - investedAmount
         : null
 
-  // Frontend fallback: if unreleased is still zero but released history exists,
-  // derive a visible value from invested minus released so the card is informative.
-  const displayUnreleasedAmount =
-    unreleasedAmount === 0 && investedAmount != null && Number(previouslyReleasedAmount ?? 0) > 0
-      ? Math.max(investedAmount - Number(previouslyReleasedAmount ?? 0), 0)
-      : unreleasedAmount
+  const displayUnreleasedAmount = unreleasedAmount
 
   const trend: 'up' | 'down' | 'neutral' = todayPnl == null ? 'neutral' : todayPnl >= 0 ? 'up' : 'down'
 
