@@ -93,6 +93,8 @@ export async function createInvestorAction(formData: FormData) {
     created_at: accountCreatedOn,
     invested_amount,
     prior_released_amount: Number.isFinite(prior_released_amount) ? prior_released_amount : 0,
+    released_amount: 0,
+    unreleased_amount: 0,
     fixed_return_value,
     fixed_return_percentage,
     is_active: true,
