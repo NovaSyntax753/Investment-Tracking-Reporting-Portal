@@ -4,6 +4,9 @@ import {
   generateMonthlyReportsForPreviousMonth,
 } from '@/lib/monthly-reports'
 
+export const runtime = 'nodejs'
+export const maxDuration = 60
+
 function isAuthorized(request: NextRequest) {
   const configuredSecret = process.env.CRON_SECRET
   if (!configuredSecret) return true

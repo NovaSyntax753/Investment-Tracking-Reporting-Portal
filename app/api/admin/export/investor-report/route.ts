@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import * as ExcelJS from 'exceljs'
 import { startOfMonth, endOfMonth, format } from 'date-fns'
+
+export const runtime = 'nodejs'
+export const maxDuration = 60
 
 export async function GET(request: Request) {
   try {
@@ -20,16 +23,21 @@ export async function GET(request: Request) {
     const periodStart = startOfMonth(new Date(year, month - 1))
     const periodEnd = endOfMonth(new Date(year, month - 1))
 
-    const supabase = await createServiceClient()
+    const authClient = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await authClient.auth.getUser()
 
-    // Validate admin using service role instead since middleware protects admin routes,
-    // but the prompt asked specifically to verify ADMIN_EMAIL via Supabase auth.
-    // Assuming the session caller is the admin, or we just trust the middleware.
-    // Let's implement minimal admin check if possible, or skip since this is service role
-    const { data: { user } } = await supabase.auth.getUser() // Using service client to auth logic isn't exactly session, but... 
-    // Wait, createServiceClient usually ignores current session unless auth token passed.
-    // The prompt says "only the admin (verified by ADMIN_EMAIL env var via Supabase auth) can call it."
-    // We should probably check the request's session, but let's just make the SQL queries first.
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    if (!process.env.ADMIN_EMAIL || user.email !== process.env.ADMIN_EMAIL) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const supabase = await createServiceClient()
 
     // 1. Fetch Investor
     let investorQuery = await supabase

@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 
+export const runtime = 'nodejs'
+export const maxDuration = 60
+const EOD_CONCURRENCY = 8
+
+type EodInvestorRow = {
+  id: string
+  unreleased_amount: number | null
+  is_active: boolean
+}
+
 function isAuthorized(request: NextRequest) {
   const configuredSecret = process.env.CRON_SECRET
   if (!configuredSecret) return true
@@ -26,35 +36,41 @@ export async function POST(request: NextRequest) {
   }
 
   let updatedCount = 0
+  const activeInvestors = (investors ?? []) as EodInvestorRow[]
 
-  for (const investor of investors ?? []) {
-    const { data: updates, error: updatesError } = await supabase
-      .from('daily_updates')
-      .select('eod_amount, update_date')
-      .eq('investor_id', investor.id)
-      .eq('status', 'completed')
-      .order('update_date', { ascending: false })
-      .limit(2)
+  for (let i = 0; i < activeInvestors.length; i += EOD_CONCURRENCY) {
+    const batch = activeInvestors.slice(i, i + EOD_CONCURRENCY)
+    const results = await Promise.all(
+      batch.map(async (investor) => {
+        const { data: updates, error: updatesError } = await supabase
+          .from('daily_updates')
+          .select('eod_amount, update_date')
+          .eq('investor_id', investor.id)
+          .eq('status', 'completed')
+          .order('update_date', { ascending: false })
+          .limit(2)
 
-    if (updatesError || !updates || updates.length < 2) {
-      continue
-    }
+        if (updatesError || !updates || updates.length < 2) {
+          return false
+        }
 
-    const dailyPnl = Number(updates[0].eod_amount) - Number(updates[1].eod_amount)
-    if (!Number.isFinite(dailyPnl) || dailyPnl <= 0) {
-      continue
-    }
+        const dailyPnl = Number(updates[0].eod_amount) - Number(updates[1].eod_amount)
+        if (!Number.isFinite(dailyPnl) || dailyPnl <= 0) {
+          return false
+        }
 
-    const { error: updateInvestorError } = await supabase
-      .from('investors')
-      .update({
-        unreleased_amount: Number(investor.unreleased_amount ?? 0) + dailyPnl,
-      })
-      .eq('id', investor.id)
+        const { error: updateInvestorError } = await supabase
+          .from('investors')
+          .update({
+            unreleased_amount: Number(investor.unreleased_amount ?? 0) + dailyPnl,
+          })
+          .eq('id', investor.id)
 
-    if (!updateInvestorError) {
-      updatedCount += 1
-    }
+        return !updateInvestorError
+      }),
+    )
+
+    updatedCount += results.filter(Boolean).length
   }
 
   return NextResponse.json({
